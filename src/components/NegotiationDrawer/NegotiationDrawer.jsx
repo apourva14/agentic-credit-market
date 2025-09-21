@@ -320,19 +320,61 @@ End of Audit Log
         </div>
       )
     }
+
+    // Check if message contains JSON offer
+    const jsonMatch = message.content.match(/\{[\s\S]*\}/)
+    const hasJsonOffer = jsonMatch && (message.type === 'offer' || message.type === 'counter_offer')
     
     return (
       <div key={message.id} className={`flex mb-4 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-        <div className={`max-w-sm px-4 py-3 rounded-lg ${
+        <div className={`max-w-2xl px-4 py-3 rounded-lg ${
           isOwnMessage 
             ? 'bg-primary-500 text-white' 
             : message.sender === deal?.bankName
               ? 'bg-success-100 text-success-800'
               : 'bg-blue-100 text-blue-800'
         }`}>
-          <div className="font-semibold text-sm mb-1">{message.sender}</div>
-          <div className="text-sm leading-relaxed">{message.content}</div>
-          <div className={`text-xs mt-1 ${isOwnMessage ? 'text-white/70' : 'text-gray-500'}`}>
+          <div className="font-semibold text-sm mb-2 flex items-center gap-2">
+            {message.sender}
+            {message.type === 'offer' && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">OFFER</span>}
+            {message.type === 'counter_offer' && <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded">COUNTER</span>}
+            {message.type === 'acceptance' && <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">ACCEPTED</span>}
+          </div>
+          
+          {hasJsonOffer ? (
+            <div className="space-y-3">
+              {/* JSON Offer Section */}
+              <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-xs overflow-x-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-green-400 font-semibold">📋 Offer Details</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(jsonMatch[0])
+                      // You could add a toast notification here
+                    }}
+                    className="text-gray-400 hover:text-white text-xs"
+                  >
+                    📋 Copy JSON
+                  </button>
+                </div>
+                <pre className="whitespace-pre-wrap">{jsonMatch[0]}</pre>
+              </div>
+              
+              {/* Reasoning Section */}
+              {message.content.replace(jsonMatch[0], '').trim() && (
+                <div className="bg-white/10 p-3 rounded-lg">
+                  <div className="text-xs font-semibold mb-2 text-yellow-300">💭 Bank's Reasoning</div>
+                  <div className="text-sm leading-relaxed">
+                    {message.content.replace(jsonMatch[0], '').trim()}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm leading-relaxed">{message.content}</div>
+          )}
+          
+          <div className={`text-xs mt-2 ${isOwnMessage ? 'text-white/70' : 'text-gray-500'}`}>
             {formatTimestamp(message.timestamp)}
           </div>
         </div>

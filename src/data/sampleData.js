@@ -1,31 +1,124 @@
 export const sampleData = {
   intents: [
     {
+      // Basic fields for backward compatibility
       id: 1001,
       companyName: "TechStart Solutions",
       amount: 500000,
       duration: 12,
       purpose: "Equipment purchase and expansion",
       status: "open",
-      timestamp: "2025-09-20T01:30:00Z"
+      timestamp: "2025-09-20T01:30:00Z",
+      
+      // Full intent schema
+      intent_id: "INTENT_1001",
+      customer_id: "TechStart Solutions",
+      product_type: "business_line_of_credit",
+      requested_amount: 500000,
+      currency: "USD",
+      desired_term: 12,
+      
+      // Customer profile
+      customer_profile: {
+        industry: "Technology",
+        annual_revenue: 2500000,
+        credit_score: 720,
+        esg_profile: "Standard"
+      },
+      
+      // ESG preferences
+      esg_preferences: {
+        exclude_high_carbon: false,
+        preferred_green_certification: "None"
+      },
+      
+      // Additional fields for internal use
+      industry: "Technology",
+      creditScore: 720,
+      esgProfile: "Standard",
+      excludeHighCarbon: false,
+      greenCertification: "None",
+      annualRevenue: 2500000
     },
     {
+      // Basic fields for backward compatibility
       id: 1002,
       companyName: "Green Energy Corp",
       amount: 2000000,
       duration: 24,
       purpose: "Solar panel manufacturing facility",
       status: "open",
-      timestamp: "2025-09-20T01:15:00Z"
+      timestamp: "2025-09-20T01:15:00Z",
+      
+      // Full intent schema
+      intent_id: "INTENT_1002",
+      customer_id: "Green Energy Corp",
+      product_type: "business_line_of_credit",
+      requested_amount: 2000000,
+      currency: "USD",
+      desired_term: 24,
+      
+      // Customer profile
+      customer_profile: {
+        industry: "Renewable Energy",
+        annual_revenue: 15000000,
+        credit_score: 780,
+        esg_profile: "CarbonNeutralCertified"
+      },
+      
+      // ESG preferences
+      esg_preferences: {
+        exclude_high_carbon: true,
+        preferred_green_certification: "GreenLoanPrinciples"
+      },
+      
+      // Additional fields for internal use
+      industry: "Renewable Energy",
+      creditScore: 780,
+      esgProfile: "CarbonNeutralCertified",
+      excludeHighCarbon: true,
+      greenCertification: "GreenLoanPrinciples",
+      annualRevenue: 15000000
     },
     {
+      // Basic fields for backward compatibility
       id: 1003,
       companyName: "HealthTech Innovations",
       amount: 750000,
       duration: 18,
       purpose: "Medical device development",
       status: "open",
-      timestamp: "2025-09-20T02:00:00Z"
+      timestamp: "2025-09-20T02:00:00Z",
+      
+      // Full intent schema
+      intent_id: "INTENT_1003",
+      customer_id: "HealthTech Innovations",
+      product_type: "business_line_of_credit",
+      requested_amount: 750000,
+      currency: "USD",
+      desired_term: 18,
+      
+      // Customer profile
+      customer_profile: {
+        industry: "Healthcare",
+        annual_revenue: 5000000,
+        credit_score: 690,
+        esg_profile: "ISO14001Certified"
+      },
+      
+      // ESG preferences
+      esg_preferences: {
+        exclude_high_carbon: true,
+        preferred_green_certification: "SustainabilityLinkedLoan"
+      },
+      
+      // Additional fields for internal use
+      industry: "Healthcare",
+      creditScore: 690,
+      esgProfile: "ISO14001Certified",
+      excludeHighCarbon: true,
+      greenCertification: "SustainabilityLinkedLoan",
+      annualRevenue: 5000000
     }
   ],
   ongoingDeals: [
@@ -60,22 +153,84 @@ export const sampleData = {
   ],
   closedDeals: [
     {
+      // Basic fields for backward compatibility
       id: 1000,
       companyName: "Manufacturing Plus",
       winningBank: "Delta Bank",
       amount: 750000,
       duration: 18,
       purpose: "Equipment upgrade and facility expansion",
-      timestamp: "2025-09-19T15:45:00Z"
+      timestamp: "2025-09-19T15:45:00Z",
+      
+      // Full intent schema
+      intent_id: "INTENT_1000",
+      customer_id: "Manufacturing Plus",
+      product_type: "business_line_of_credit",
+      requested_amount: 750000,
+      currency: "USD",
+      desired_term: 18,
+      
+      // Customer profile
+      customer_profile: {
+        industry: "Manufacturing",
+        annual_revenue: 12000000,
+        credit_score: 750,
+        esg_profile: "Standard"
+      },
+      
+      // ESG preferences
+      esg_preferences: {
+        exclude_high_carbon: false,
+        preferred_green_certification: "None"
+      },
+      
+      // Additional fields for internal use
+      industry: "Manufacturing",
+      creditScore: 750,
+      esgProfile: "Standard",
+      excludeHighCarbon: false,
+      greenCertification: "None",
+      annualRevenue: 12000000
     },
     {
+      // Basic fields for backward compatibility
       id: 999,
       companyName: "Retail Dynamics",
       winningBank: "Alpha Bank",
       amount: 300000,
       duration: 12,
       purpose: "Working capital and inventory management",
-      timestamp: "2025-09-19T10:30:00Z"
+      timestamp: "2025-09-19T10:30:00Z",
+      
+      // Full intent schema
+      intent_id: "INTENT_999",
+      customer_id: "Retail Dynamics",
+      product_type: "business_line_of_credit",
+      requested_amount: 300000,
+      currency: "USD",
+      desired_term: 12,
+      
+      // Customer profile
+      customer_profile: {
+        industry: "Retail",
+        annual_revenue: 8000000,
+        credit_score: 680,
+        esg_profile: "Standard"
+      },
+      
+      // ESG preferences
+      esg_preferences: {
+        exclude_high_carbon: false,
+        preferred_green_certification: "None"
+      },
+      
+      // Additional fields for internal use
+      industry: "Retail",
+      creditScore: 680,
+      esgProfile: "Standard",
+      excludeHighCarbon: false,
+      greenCertification: "None",
+      annualRevenue: 8000000
     }
   ]
 }

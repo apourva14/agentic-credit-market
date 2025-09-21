@@ -114,14 +114,13 @@ Generate a JSON offer that includes all necessary fields (interest_rate, credit_
   }
 }
 
-Task: Based on the above Customer Intent and Bank Configuration, generate the best possible offer from ${bankName} in JSON format. Include:
-- Interest rate, credit limit, term_length, fees, etc.
-- An ESG impact metric (estimated_project_emissions or esg_rating) in the offer.
-- An "offer_explanation" field explaining the rationale (one paragraph).
+Task: Based on the above Customer Intent and Bank Configuration, generate the best possible offer from ${bankName}. 
 
-Make sure the explanation reflects ${bankName}'s config (risk ${bankConfig.risk_appetite}: appropriate terms, and since esg_focus is ${bankConfig.esg_focus}, note any ESG-related adjustments).
+IMPORTANT: Format your response as follows:
+1. First, provide the JSON offer (exactly as specified below)
+2. Then, provide a separate explanation paragraph
 
-Required JSON Schema:
+Required JSON Schema (exactly as specified):
 {
   "offer_id": "OFFER_[unique_id]",
   "bank_id": "${bankName}",
@@ -134,12 +133,12 @@ Required JSON Schema:
     "early_closure_fee": [number]
   },
   "collateral_required": "[string description]",
-  "esg_impact_metric": {
-    "estimated_project_emissions": ${estimatedEmissions},
-    "esg_rating": [number 1-100]
-  },
-  "offer_explanation": "[detailed explanation of terms and reasoning]"
-}`
+  "estimated_project_emissions": ${estimatedEmissions},
+  "esg_rating": [number 1-100],
+  "offer_explanation": "[brief explanation]"
+}
+
+After the JSON, provide a detailed explanation paragraph that reflects ${bankName}'s config (risk ${bankConfig.risk_appetite}: appropriate terms, and since esg_focus is ${bankConfig.esg_focus}, note any ESG-related adjustments).`
 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -205,12 +204,13 @@ Generate a JSON counter-offer that shows willingness to negotiate while protecti
     const userContent = `Previous conversation:
 ${chatHistory}
 
-Task: Generate a counter-offer in JSON format that addresses the customer's concerns while staying within ${bankName}'s parameters. Include:
-- Updated interest rate, credit limit, term_length, fees, etc.
-- ESG impact metrics and reasoning
-- An "offer_explanation" field explaining the changes made
+Task: Generate a counter-offer from ${bankName} that addresses the customer's concerns while staying within bank parameters.
 
-Required JSON Schema:
+IMPORTANT: Format your response as follows:
+1. First, provide the JSON counter-offer (exactly as specified below)
+2. Then, provide a separate explanation paragraph
+
+Required JSON Schema (exactly as specified):
 {
   "offer_id": "OFFER_[unique_id]_COUNTER",
   "bank_id": "${bankName}",
@@ -223,12 +223,12 @@ Required JSON Schema:
     "early_closure_fee": [number]
   },
   "collateral_required": "[string description]",
-  "esg_impact_metric": {
-    "estimated_project_emissions": ${estimatedEmissions},
-    "esg_rating": [number 1-100]
-  },
-  "offer_explanation": "[detailed explanation of changes and reasoning]"
-}`
+  "estimated_project_emissions": ${estimatedEmissions},
+  "esg_rating": [number 1-100],
+  "offer_explanation": "[brief explanation]"
+}
+
+After the JSON, provide a detailed explanation paragraph explaining the changes made and reasoning.`
 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
