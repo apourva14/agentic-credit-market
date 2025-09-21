@@ -106,22 +106,15 @@ function App() {
   const { filteredIntents, filteredOngoingDeals, filteredClosedDeals } = getFilteredData()
 
   const handleCreateIntent = (intentData) => {
-    // Generate a unique ID by finding the highest existing ID and adding 1
-    const generateUniqueId = () => {
-      const allIntents = [...intents, ...closedDeals]
-      const maxId = Math.max(...allIntents.map(item => item.id), 0)
-      return maxId + 1
-    }
-    
     const newIntent = {
-      id: generateUniqueId(),
+      id: nextIntentId,
       ...intentData,
       status: 'open',
       timestamp: new Date().toISOString()
     }
     
     setIntents(prev => [...prev, newIntent])
-    setNextIntentId(prev => Math.max(prev, newIntent.id + 1))
+    setNextIntentId(prev => prev + 1)
     return newIntent
   }
 
