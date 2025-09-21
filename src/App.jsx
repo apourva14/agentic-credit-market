@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 function App() {
   const [currentRole, setCurrentRole] = useState('company')
   const [selectedBank, setSelectedBank] = useState('')
+  const [selectedCompany, setSelectedCompany] = useState('')
   const [intents, setIntents] = useState(sampleData.intents)
   const [ongoingDeals, setOngoingDeals] = useState(sampleData.ongoingDeals)
   const [closedDeals, setClosedDeals] = useState(sampleData.closedDeals)
@@ -25,6 +26,7 @@ function App() {
   const handleRoleChange = (role) => {
     setCurrentRole(role)
     setSelectedBank('')
+    setSelectedCompany('')
     // Close drawer when role changes
     setIsDrawerOpen(false)
   }
@@ -32,6 +34,40 @@ function App() {
   const handleBankSelection = (bank) => {
     setSelectedBank(bank)
   }
+
+  const handleCompanySelection = (company) => {
+    setSelectedCompany(company)
+  }
+
+  // Filter data based on selected company (only for company role, unless admin or guest)
+  const getFilteredData = () => {
+    if (currentRole === 'guest') {
+      // Guest sees all data
+      return {
+        filteredIntents: intents,
+        filteredOngoingDeals: ongoingDeals,
+        filteredClosedDeals: closedDeals
+      }
+    }
+
+    if (currentRole === 'company' && selectedCompany) {
+      // Company sees only their own data
+      return {
+        filteredIntents: intents.filter(intent => intent.companyName === selectedCompany),
+        filteredOngoingDeals: ongoingDeals.filter(deal => deal.companyName === selectedCompany),
+        filteredClosedDeals: closedDeals.filter(deal => deal.companyName === selectedCompany)
+      }
+    }
+
+    // Admin and bank roles see all data, company without selection sees all
+    return {
+      filteredIntents: intents,
+      filteredOngoingDeals: ongoingDeals,
+      filteredClosedDeals: closedDeals
+    }
+  }
+
+  const { filteredIntents, filteredOngoingDeals, filteredClosedDeals } = getFilteredData()
 
   const handleCreateIntent = (intentData) => {
     const newIntent = {
@@ -119,7 +155,7 @@ function App() {
         }
       }
     }
-    
+
     if (!intent) {
       console.error('Intent not found for deal:', deal)
       return
@@ -150,8 +186,10 @@ function App() {
       <Header
         currentRole={currentRole}
         selectedBank={selectedBank}
+        selectedCompany={selectedCompany}
         onRoleChange={handleRoleChange}
         onBankSelection={handleBankSelection}
+        onCompanySelection={handleCompanySelection}
         permissions={permissions}
       />
       
@@ -159,15 +197,17 @@ function App() {
         <IntentForm
           onCreateIntent={handleCreateIntent}
           currentRole={currentRole}
+          selectedCompany={selectedCompany}
         />
       )}
       
       <KanbanBoard
-        intents={intents}
-        ongoingDeals={ongoingDeals}
-        closedDeals={closedDeals}
+        intents={filteredIntents}
+        ongoingDeals={filteredOngoingDeals}
+        closedDeals={filteredClosedDeals}
         currentRole={currentRole}
         selectedBank={selectedBank}
+        selectedCompany={selectedCompany}
         permissions={permissions}
         onExpressInterest={handleExpressInterest}
         onCloseDeal={handleCloseDeal}
@@ -183,6 +223,7 @@ function App() {
         intent={selectedIntent}
         currentRole={currentRole}
         selectedBank={selectedBank}
+        selectedCompany={selectedCompany}
         onDealAccepted={handleDealAccepted}
         onDealCancelled={handleDealCancelled}
       />

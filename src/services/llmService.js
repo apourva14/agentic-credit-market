@@ -7,7 +7,6 @@ export const verifyIdentity = async (companyName, intent) => {
   
   // Return random boolean for now (80% success rate)
   return Math.random() > 0.2
-  // return true
 }
 
 // Generate initial bank offer using LLM
@@ -168,5 +167,58 @@ Respond with either acceptance or a counter-offer.`
   } catch (error) {
     console.error('OpenRouter API error:', error)
     throw new Error('Failed to evaluate offer. Please try again.')
+  }
+}
+
+// Generate conversation summary for closed deals
+export const generateConversationSummary = async (conversation, intent, deal) => {
+  try {
+    const chatHistory = conversation
+      .filter(msg => msg.type !== 'system')
+      .map(msg => `${msg.sender}: ${msg.content}`)
+      .join('\n')
+
+    const systemPrompt = `You are an AI assistant tasked with creating a comprehensive audit summary of a completed loan negotiation between ${intent.companyName} and ${deal.bankName}. Create a professional summary that includes:
+
+1. Final agreed terms (extract from the conversation)
+2. Key negotiation points and concessions made
+3. Timeline of the negotiation process
+4. Participants and their roles
+5. Final outcome
+
+Format this as a professional audit report suitable for business documentation.`
+
+    const userContent = `Negotiation Details:
+Company: ${intent.companyName}
+Bank: ${deal.bankName}
+Original Request: $${intent.amount.toLocaleString()} for ${intent.duration} months
+Purpose: ${intent.purpose}
+
+Complete Conversation History:
+${chatHistory}
+
+Generate a comprehensive audit summary of this negotiation.`
+
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'openai/gpt-oss-20b:free',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent },
+        ],
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+        },
+      }
+    )
+
+    return response.data.choices[0].message.content
+  } catch (error) {
+    console.error('OpenRouter API error:', error)
+    throw new Error('Failed to generate summary. Please try again.')
   }
 }

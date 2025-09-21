@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { getChatSession, generateDealId, getNegotiationStatus } from '../../utils/chatStorage'
 
 const OngoingDealCard = ({ deal, currentRole, permissions, onCloseDeal, onOpenNegotiation }) => {
   const formatTimestamp = (timestamp) => {
@@ -20,6 +21,11 @@ const OngoingDealCard = ({ deal, currentRole, permissions, onCloseDeal, onOpenNe
   const canCloseDeal = () => {
     return permissions.canCloseDeal && !permissions.isReadOnly
   }
+
+  // Get negotiation status
+  const dealId = generateDealId(deal.intentId, deal.bankName)
+  const chatSession = getChatSession(dealId)
+  const negotiationStatus = getNegotiationStatus(chatSession)
 
   return (
     <div 
@@ -55,9 +61,31 @@ const OngoingDealCard = ({ deal, currentRole, permissions, onCloseDeal, onOpenNe
             <span className="text-sm font-bold text-gray-900">{deal.bankName}</span>
           </div>
           
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-warning-100 text-warning-800 rounded-full text-xs font-semibold w-fit">
-            <span>⏳</span>
-            In Negotiation
+          {/* Negotiation Status */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-warning-100 text-warning-800 rounded-full text-xs font-semibold w-fit">
+              <span>⏳</span>
+              In Negotiation
+            </div>
+            
+            {/* Dynamic Status Badge */}
+            <div className="flex flex-col gap-1">
+              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Status
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium w-fit">
+                <div className={`w-2 h-2 rounded-full ${
+                  negotiationStatus.stage === 'Completed' ? 'bg-green-400' :
+                  negotiationStatus.stage === 'Cancelled' ? 'bg-red-400' :
+                  negotiationStatus.stage === 'Verifying' ? 'bg-yellow-400' :
+                  'bg-blue-400'
+                }`}></div>
+                <span className="font-semibold">{negotiationStatus.stage}</span>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {negotiationStatus.description}
+              </div>
+            </div>
           </div>
         </div>
       </div>

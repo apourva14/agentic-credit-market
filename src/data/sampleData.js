@@ -89,6 +89,14 @@ export const availableBanks = [
   "Zeta Commercial"
 ]
 
+export const availableCompanies = [
+  "TechStart Solutions",
+  "Green Energy Corp", 
+  "HealthTech Innovations",
+  "Manufacturing Plus",
+  "Retail Dynamics"
+]
+
 export const roles = [
   {
     id: "company",

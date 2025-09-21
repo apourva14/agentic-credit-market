@@ -6,7 +6,7 @@ A modern React-based web application for facilitating credit line requests betwe
 
 ### 💬 **Negotiation Chat Window**
 - **Side Panel Interface**: Click any ongoing deal card to open a 50% width sliding drawer
-- **Real-time LLM Integration**: Powered by OpenRouter API with GPT-4o-mini
+- **Real-time LLM Integration**: Powered by OpenRouter API with gpt-oss-20b:free
 - **Role-based Workflows**: Different conversation flows for Banks and Companies
 - **Chat History Persistence**: All conversations stored in localStorage
 - **Multi-turn Negotiations**: Full support for offers, counter-offers, and acceptances
@@ -69,7 +69,7 @@ A modern React-based web application for facilitating credit line requests betwe
 - **Date Handling**: date-fns for timestamp formatting
 - **UUID**: uuid for unique identifier generation
 - **HTTP Client**: axios for LLM API calls
-- **AI Integration**: OpenRouter API with GPT-4o-mini model
+- **AI Integration**: OpenRouter API with gpt-oss-20b:free model
 - **Storage**: localStorage for chat history persistence
 
 ## Project Structure
@@ -250,7 +250,7 @@ Companies have profiles that include:
 
 ### LLM Integration
 The system uses OpenRouter API with:
-- GPT-4o-mini model for high-quality responses
+- gpt-oss-20b:free model for high-quality responses
 - Context-aware prompts based on configurations
 - Multi-turn conversation support
 - Error handling with retry mechanisms
@@ -363,7 +363,7 @@ VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 
 ## API Costs
 
-The application uses OpenRouter API which has usage-based pricing. The `gpt-4o-mini` model is cost-effective for this use case. Monitor your usage through the OpenRouter dashboard.
+The application uses OpenRouter API which has usage-based pricing. The `gpt-oss-20b:free` model is cost-effective for this use case. Monitor your usage through the OpenRouter dashboard.
 
 ---
 

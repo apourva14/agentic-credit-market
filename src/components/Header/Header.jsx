@@ -1,11 +1,13 @@
-import { roles, availableBanks } from '../../data/sampleData'
+import { roles, availableBanks, availableCompanies } from '../../data/sampleData'
 import { getRoleDisplayName } from '../../utils/rolePermissions'
 
 const Header = ({ 
   currentRole, 
-  selectedBank, 
+  selectedBank,
+  selectedCompany,
   onRoleChange, 
   onBankSelection,
+  onCompanySelection,
   permissions 
 }) => {
   const getRoleBadgeClass = (role) => {
@@ -67,6 +69,28 @@ const Header = ({
                 ))}
               </div>
             </div>
+
+            {/* Company Selector for Company Role */}
+            {currentRole === 'company' && (
+              <div className="flex flex-col gap-2">
+                <label htmlFor="companySelect" className="text-sm font-semibold text-gray-700">
+                  Select Company:
+                </label>
+                <select
+                  id="companySelect"
+                  className="form-input min-w-48"
+                  value={selectedCompany}
+                  onChange={(e) => onCompanySelection(e.target.value)}
+                >
+                  <option value="">Choose a company...</option>
+                  {availableCompanies.map(company => (
+                    <option key={company} value={company}>
+                      {company}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Bank Selector for Bank Role */}
             {currentRole === 'bank' && (

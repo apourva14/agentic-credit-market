@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 
-const IntentForm = ({ onCreateIntent, currentRole }) => {
+const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
   const [formData, setFormData] = useState({
     companyName: '',
     amount: '',
@@ -9,6 +9,16 @@ const IntentForm = ({ onCreateIntent, currentRole }) => {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
+
+  // Auto-populate company name when selectedCompany changes
+  React.useEffect(() => {
+    if (currentRole === 'company' && selectedCompany) {
+      setFormData(prev => ({
+        ...prev,
+        companyName: selectedCompany
+      }))
+    }
+  }, [selectedCompany, currentRole])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -66,9 +76,9 @@ const IntentForm = ({ onCreateIntent, currentRole }) => {
         purpose: formData.purpose.trim()
       })
       
-      // Reset form after successful submission
+      // Reset form after successful submission (but keep company name if selected)
       setFormData({
-        companyName: '',
+        companyName: selectedCompany || '',
         amount: '',
         duration: '',
         purpose: ''
@@ -81,6 +91,29 @@ const IntentForm = ({ onCreateIntent, currentRole }) => {
     }
   }
 
+  // Don't show form if company role but no company selected
+  if (currentRole === 'company' && !selectedCompany) {
+    return (
+      <section className="py-6 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="card max-w-4xl mx-auto overflow-hidden animate-fade-in">
+            <div className="px-6 py-8 text-center">
+              <div className="text-4xl mb-4">🏢</div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
+                Company Selection Required
+              </h2>
+              <p className="text-gray-600">
+                Please select a company from the header to create credit intents.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  const isCompanyNameDisabled = currentRole === 'company' && selectedCompany
+
   return (
     <section className="py-6 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
@@ -92,6 +125,9 @@ const IntentForm = ({ onCreateIntent, currentRole }) => {
             </h2>
             <p className="text-sm text-gray-600">
               Submit a new credit line request to the marketplace
+              {selectedCompany && (
+                <span className="ml-1 font-medium">for {selectedCompany}</span>
+              )}
             </p>
           </div>
           
@@ -102,15 +138,21 @@ const IntentForm = ({ onCreateIntent, currentRole }) => {
               <div className="space-y-1">
                 <label htmlFor="companyName" className="form-label">
                   Company Name *
+                  {isCompanyNameDisabled && (
+                    <span className="ml-1 text-xs text-gray-500">(Auto-selected)</span>
+                  )}
                 </label>
                 <input
                   type="text"
                   id="companyName"
                   name="companyName"
-                  className={`form-input ${errors.companyName ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500' : ''}`}
+                  className={`form-input ${
+                    isCompanyNameDisabled ? 'bg-gray-50 cursor-not-allowed' : ''
+                  } ${errors.companyName ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500' : ''}`}
                   value={formData.companyName}
                   onChange={handleChange}
                   placeholder="Enter company name"
+                  disabled={isCompanyNameDisabled}
                   required
                 />
                 {errors.companyName && (
