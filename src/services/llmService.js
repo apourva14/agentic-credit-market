@@ -6,7 +6,7 @@ export const verifyIdentity = async (companyName, intent) => {
   await new Promise(resolve => setTimeout(resolve, 1000))
   
   // Return random boolean for now (80% success rate)
-  return true
+  // return true
   return Math.random() > 0.2
 }
 
@@ -14,7 +14,7 @@ export const verifyIdentity = async (companyName, intent) => {
 const calculateProjectEmissions = (purpose, amount) => {
   const purposeLower = purpose.toLowerCase()
   let baseEmissions = 0
-  
+
   // Base emissions per $100k of funding
   if (purposeLower.includes('renewable') || purposeLower.includes('solar') || purposeLower.includes('wind')) {
     baseEmissions = 50 // Low emissions for green projects
@@ -27,7 +27,7 @@ const calculateProjectEmissions = (purpose, amount) => {
   } else {
     baseEmissions = 200 // Default medium emissions
   }
-  
+
   return Math.round((amount / 100000) * baseEmissions)
 }
 
@@ -43,6 +43,7 @@ const parseOfferFromResponse = (responseContent) => {
         offer: offer
       }
     }
+
     // If no JSON found, return the content as is
     return {
       content: responseContent,
@@ -66,10 +67,10 @@ export const generateOfferLLM = async (intent, bankConfig, bankName) => {
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
       throw new Error('OpenRouter API key is not configured. Please set VITE_OPENROUTER_API_KEY in your environment variables.')
     }
-    
+
     // Calculate estimated project emissions based on purpose and amount
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
-    
+
     const systemPrompt = `You are an AI assistant operating as a loan officer for ${bankName}. You will receive a loan request and must respond with a JSON offer and a brief explanation. Only output valid JSON and concise reasoning. Adhere to the bank's policies provided.
 
 Bank Configuration:
@@ -114,7 +115,7 @@ Generate a JSON offer that includes all necessary fields (interest_rate, credit_
   }
 }
 
-Task: Based on the above Customer Intent and Bank Configuration, generate the best possible offer from ${bankName}. 
+Task: Based on the above Customer Intent and Bank Configuration, generate the best possible offer from ${bankName}.
 
 IMPORTANT: Format your response as follows:
 1. First, provide the JSON offer (exactly as specified below)
@@ -143,7 +144,7 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'openai/gpt-oss-20b:free',
+        model: 'gpt-oss-20b:free',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -159,7 +160,6 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
 
     const responseContent = response.data.choices[0].message.content
     const parsedResponse = parseOfferFromResponse(responseContent)
-    
     return parsedResponse
   } catch (error) {
     console.error('OpenRouter API error:', error)
@@ -175,7 +175,7 @@ export const generateCounterOfferLLM = async (conversation, bankConfig, bankName
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
       throw new Error('OpenRouter API key is not configured. Please set VITE_OPENROUTER_API_KEY in your environment variables.')
     }
-    
+
     const chatHistory = conversation.map(msg => 
       `${msg.sender}: ${msg.content}`
     ).join('\n')
@@ -233,7 +233,7 @@ After the JSON, provide a detailed explanation paragraph explaining the changes 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'openai/gpt-oss-20b:free',
+        model: 'gpt-oss-20b:free',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -249,7 +249,6 @@ After the JSON, provide a detailed explanation paragraph explaining the changes 
 
     const responseContent = response.data.choices[0].message.content
     const parsedResponse = parseOfferFromResponse(responseContent)
-    
     return parsedResponse
   } catch (error) {
     console.error('OpenRouter API error:', error)
@@ -265,7 +264,7 @@ export const evaluateOfferLLM = async (intent, bankOffer, companyConfig, convers
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
       throw new Error('OpenRouter API key is not configured. Please set VITE_OPENROUTER_API_KEY in your environment variables.')
     }
-    
+
     const chatHistory = conversation.length > 0 ? 
       conversation.map(msg => `${msg.sender}: ${msg.content}`).join('\n') : 
       'This is the first offer from the bank.'
@@ -333,7 +332,7 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'openai/gpt-oss-20b:free',
+        model: 'gpt-oss-20b:free',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -366,6 +365,132 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
     console.error('OpenRouter API error:', error)
     console.error('Error details:', error.response?.data || error.message)
     throw new Error(`Failed to evaluate offer: ${error.response?.data?.error?.message || error.message}`)
+  }
+}
+
+// New function for market simulation: Company evaluates all bank offers and makes decisions
+export const evaluateAllOffersLLM = async (intent, bankOffers, companyConfig) => {
+  try {
+    // Check if API key is available
+    if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
+      throw new Error('OpenRouter API key is not configured. Please set VITE_OPENROUTER_API_KEY in your environment variables.')
+    }
+
+    const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
+    
+    // Format all offers for the prompt
+    const offersText = bankOffers.map((offer, index) => 
+      `Offer ${index + 1} from ${offer.bankName}:
+${offer.content}`
+    ).join('\n\n')
+
+    const systemPrompt = `You are an AI agent representing ${intent.companyName}. You have received multiple loan offers from different banks and need to make strategic decisions about which banks to negotiate with and which to reject or accept.
+
+Company Configuration:
+- Max Acceptable Rate: ${companyConfig.max_acceptable_rate}%
+- Min Amount Required: $${companyConfig.min_amount_required.toLocaleString()}
+- ESG Priority: ${companyConfig.esg_priority}
+- ESG Max Emissions: ${companyConfig.esg_max_emissions} tCO2/year
+- Min ESG Rating: ${companyConfig.min_esg_rating}/100
+- Decision Strategy: ${companyConfig.decision_strategy}
+- Negotiation Strategy: ${companyConfig.negotiation_strategy}
+- Preferred Bank Features: ${companyConfig.preferred_bank_features.join(', ')}
+
+Project Information:
+- Estimated Project Emissions: ${estimatedEmissions} tCO2/year
+- Project Purpose: ${intent.purpose}
+
+Decision Strategy:
+1. Identify the best 1-2 offers to focus negotiation on
+2. Decide which offers to reject immediately (too expensive, poor terms, ESG conflicts)
+3. For top offers, decide whether to accept immediately or negotiate further
+
+Respond with a structured decision that includes:
+- Which bank offer to ACCEPT (if any is good enough)
+- Which banks to NEGOTIATE with (1-2 banks maximum) 
+- Which banks to REJECT outright
+- Brief reasoning for each decision
+
+Format your response clearly with sections: ACCEPT, NEGOTIATE, REJECT`
+
+    const userContent = `Original Intent:
+{
+  "intent_id": "${intent.id}",
+  "customer_id": "${intent.companyName}",
+  "requested_amount": ${intent.amount},
+  "purpose": "${intent.purpose}",
+  "desired_term": ${intent.duration}
+}
+
+All Bank Offers Received:
+${offersText}
+
+Task: Based on your company's configuration and requirements, make strategic decisions about these offers. Consider financial terms, ESG impact, and alignment with your company's values.
+
+Provide a structured response with clear ACCEPT/NEGOTIATE/REJECT decisions and reasoning.`
+
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'gpt-oss-20b:free',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent },
+        ],
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+        },
+      }
+    )
+
+    const responseContent = response.data.choices[0].message.content
+    
+    // Parse the decision from the response
+    const decisions = {
+      accept: null,
+      negotiate: [],
+      reject: []
+    }
+
+    // Extract bank decisions from the response
+    const lines = responseContent.split('\n')
+    let currentSection = null
+    
+    for (const line of lines) {
+      const trimmed = line.trim().toLowerCase()
+      if (trimmed.includes('accept')) {
+        currentSection = 'accept'
+      } else if (trimmed.includes('negotiate')) {
+        currentSection = 'negotiate'
+      } else if (trimmed.includes('reject')) {
+        currentSection = 'reject'
+      } else if (currentSection && line.trim()) {
+        // Look for bank names in the line
+        bankOffers.forEach(offer => {
+          if (line.toLowerCase().includes(offer.bankName.toLowerCase())) {
+            if (currentSection === 'accept' && !decisions.accept) {
+              decisions.accept = offer.bankName
+            } else if (currentSection === 'negotiate' && !decisions.negotiate.includes(offer.bankName)) {
+              decisions.negotiate.push(offer.bankName)
+            } else if (currentSection === 'reject' && !decisions.reject.includes(offer.bankName)) {
+              decisions.reject.push(offer.bankName)
+            }
+          }
+        })
+      }
+    }
+
+    return {
+      content: responseContent,
+      decisions
+    }
+  } catch (error) {
+    console.error('OpenRouter API error:', error)
+    console.error('Error details:', error.response?.data || error.message)
+    throw new Error(`Failed to evaluate all offers: ${error.response?.data?.error?.message || error.message}`)
   }
 }
 
@@ -410,7 +535,7 @@ Generate a comprehensive audit summary of this negotiation.`
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'openai/gpt-oss-20b:free',
+        model: 'gpt-oss-20b:free',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },

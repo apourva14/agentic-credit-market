@@ -8,7 +8,10 @@ const Header = ({
   onRoleChange, 
   onBankSelection,
   onCompanySelection,
-  permissions 
+  permissions,
+  isMarketRunning,
+  onStartMarket,
+  onStopMarket
 }) => {
   const getRoleBadgeClass = (role) => {
     const baseClass = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold capitalize"
@@ -47,6 +50,32 @@ const Header = ({
 
           {/* Controls */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6 w-full lg:w-auto">
+            {/* Market Simulation Button (Guest Role Only) */}
+            {currentRole === 'guest' && (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Market Demo:
+                </label>
+                {!isMarketRunning ? (
+                  <button
+                    onClick={onStartMarket}
+                    className="btn btn-success flex items-center gap-2 px-4 py-2 text-sm"
+                  >
+                    <span>🚀</span>
+                    Start Market
+                  </button>
+                ) : (
+                  <button
+                    onClick={onStopMarket}
+                    className="btn btn-danger flex items-center gap-2 px-4 py-2 text-sm"
+                  >
+                    <span>⏹️</span>
+                    Shutdown Market
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Role Selector */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-gray-700">
