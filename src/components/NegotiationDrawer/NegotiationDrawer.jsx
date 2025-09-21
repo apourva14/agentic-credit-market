@@ -168,17 +168,24 @@ End of Audit Log
     setError(null)
     
     try {
-      const offer = await generateOfferLLM(intent, bankConfig, deal.bankName)
+      console.log('Generating offer for:', { intent, bankConfig, bankName: deal.bankName })
+      const response = await generateOfferLLM(intent, bankConfig, deal.bankName)
+      console.log('Offer response:', response)
+      
+      // Handle both old string format and new object format
+      const offerContent = typeof response === 'string' ? response : response.content
+      console.log('Offer content:', offerContent)
       
       addMessageToSession(dealId, {
         sender: deal.bankName,
-        content: offer,
+        content: offerContent,
         type: 'offer'
       })
       
       updateSessionStatus(dealId, 'in_progress')
       setChatSession(getChatSession(dealId))
     } catch (error) {
+      console.error('Error generating offer:', error)
       setError(error.message)
     } finally {
       setIsLoading(false)
@@ -191,21 +198,25 @@ End of Audit Log
     
     try {
       const conversation = chatSession.messages.filter(msg => msg.type !== 'system')
-      const counterOffer = await generateCounterOfferLLM(
+      const response = await generateCounterOfferLLM(
         conversation, 
         bankConfig, 
         deal.bankName, 
         intent
       )
       
+      // Handle both old string format and new object format
+      const counterOfferContent = typeof response === 'string' ? response : response.content
+      
       addMessageToSession(dealId, {
         sender: deal.bankName,
-        content: counterOffer,
+        content: counterOfferContent,
         type: 'counter_offer'
       })
       
       setChatSession(getChatSession(dealId))
     } catch (error) {
+      console.error('Error generating counter-offer:', error)
       setError(error.message)
     } finally {
       setIsLoading(false)
