@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { bankConfigs } from '../../data/bankConfigs'
 import { companyConfigs, generateCompanyConfig } from '../../data/companyConfigs'
 import { 
@@ -494,9 +496,33 @@ End of Audit Log
 
                 {conversationSummary ? (
                   <div className="space-y-4">
-                    <div className="bg-white p-4 rounded-lg border border-success-200">
-                      <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                        {conversationSummary}
+                    <div className="bg-white p-6 rounded-lg border border-success-200 shadow-sm">
+                      <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-code:text-gray-800 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-50 prose-pre:border prose-pre:border-gray-200">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({children}) => <h1 className="text-xl font-bold text-gray-900 mt-6 mb-4 border-b border-gray-200 pb-2">{children}</h1>,
+                            h2: ({children}) => <h2 className="text-lg font-semibold text-gray-900 mt-5 mb-3">{children}</h2>,
+                            h3: ({children}) => <h3 className="text-base font-semibold text-gray-800 mt-4 mb-2">{children}</h3>,
+                            p: ({children}) => <p className="text-gray-700 leading-relaxed mb-3">{children}</p>,
+                            ul: ({children}) => <ul className="list-disc list-inside space-y-1 mb-4 text-gray-700">{children}</ul>,
+                            ol: ({children}) => <ol className="list-decimal list-inside space-y-1 mb-4 text-gray-700">{children}</ol>,
+                            li: ({children}) => <li className="text-gray-700">{children}</li>,
+                            strong: ({children}) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                            em: ({children}) => <em className="italic text-gray-600">{children}</em>,
+                            code: ({children}) => <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
+                            pre: ({children}) => <pre className="bg-gray-50 border border-gray-200 p-3 rounded-lg overflow-x-auto mb-4">{children}</pre>,
+                            blockquote: ({children}) => <blockquote className="border-l-4 border-blue-200 pl-4 italic text-gray-600 my-4">{children}</blockquote>,
+                            table: ({children}) => <div className="overflow-x-auto mb-4"><table className="min-w-full border border-gray-200 rounded-lg">{children}</table></div>,
+                            thead: ({children}) => <thead className="bg-gray-50">{children}</thead>,
+                            tbody: ({children}) => <tbody className="divide-y divide-gray-200">{children}</tbody>,
+                            tr: ({children}) => <tr className="hover:bg-gray-50">{children}</tr>,
+                            th: ({children}) => <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{children}</th>,
+                            td: ({children}) => <td className="px-4 py-2 text-sm text-gray-700">{children}</td>
+                          }}
+                        >
+                          {conversationSummary}
+                        </ReactMarkdown>
                       </div>
                     </div>
                     

@@ -153,6 +153,12 @@ function App() {
           status: "closed",
           timestamp: closedDeal.timestamp
         }
+        
+        // Update the deal object to include winningBank for closed deals
+        deal = {
+          ...deal,
+          winningBank: closedDeal.winningBank
+        }
       }
     }
 

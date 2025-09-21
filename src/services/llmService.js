@@ -6,6 +6,7 @@ export const verifyIdentity = async (companyName, intent) => {
   await new Promise(resolve => setTimeout(resolve, 1000))
   
   // Return random boolean for now (80% success rate)
+  return true
   return Math.random() > 0.2
 }
 
@@ -186,7 +187,16 @@ export const generateConversationSummary = async (conversation, intent, deal) =>
 4. Participants and their roles
 5. Final outcome
 
-Format this as a professional audit report suitable for business documentation.`
+Format this as a professional audit report using proper markdown formatting:
+- Use # for main title, ## for major sections, ### for subsections
+- Use **bold** for important terms and values
+- Use bullet points (-) for lists
+- Use tables for structured data when appropriate
+- Use > blockquotes for important quotes or key decisions
+- Use \`code\` formatting for specific terms or amounts
+- Ensure proper spacing and readability
+
+Make it suitable for business documentation with clear hierarchy and professional presentation.`
 
     const userContent = `Negotiation Details:
 Company: ${intent.companyName}
