@@ -10,29 +10,61 @@ export const verifyIdentity = async (companyName, intent) => {
   return Math.random() > 0.2
 }
 
+// Calculate estimated project emissions based on purpose and amount
+const calculateProjectEmissions = (purpose, amount) => {
+  const purposeLower = purpose.toLowerCase()
+  let baseEmissions = 0
+  
+  // Base emissions per $100k of funding
+  if (purposeLower.includes('renewable') || purposeLower.includes('solar') || purposeLower.includes('wind')) {
+    baseEmissions = 50 // Low emissions for green projects
+  } else if (purposeLower.includes('tech') || purposeLower.includes('software') || purposeLower.includes('digital')) {
+    baseEmissions = 100 // Medium-low emissions for tech
+  } else if (purposeLower.includes('manufacturing') || purposeLower.includes('production')) {
+    baseEmissions = 300 // High emissions for manufacturing
+  } else if (purposeLower.includes('energy') || purposeLower.includes('coal') || purposeLower.includes('oil')) {
+    baseEmissions = 500 // Very high emissions for fossil fuel projects
+  } else {
+    baseEmissions = 200 // Default medium emissions
+  }
+  
+  return Math.round((amount / 100000) * baseEmissions)
+}
+
 // Generate initial bank offer using LLM
 export const generateOfferLLM = async (intent, bankConfig, bankName) => {
   try {
+    // Calculate estimated project emissions based on purpose and amount
+    const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
+    
     const systemPrompt = `You are an AI representing ${bankName}, a financial institution. Based on the bank's configuration and the company's credit request, generate a professional loan offer. Be specific about terms including interest rate, duration, collateral requirements, and any conditions.
 
 Bank Configuration:
-- Risk Tolerance: ${bankConfig.riskTolerance}
-- Preferred Interest Rate Range: ${bankConfig.preferredInterestRate}
-- Max Loan Amount: $${bankConfig.maxLoanAmount.toLocaleString()}
-- Min Loan Amount: $${bankConfig.minLoanAmount.toLocaleString()}
-- Preferred Duration: ${bankConfig.preferredDuration}
-- Collateral Requirements: ${bankConfig.requiredCollateral}
-- Credit Score Requirement: ${bankConfig.creditScoreRequirement}
-- Processing Fee: ${bankConfig.processingFee}
-- Negotiation Style: ${bankConfig.negotiationStyle}
-- Specializations: ${bankConfig.specializations.join(', ')}
+- Risk Appetite: ${bankConfig.risk_appetite}
+- Interest Rate Range: ${bankConfig.min_interest_rate}% - ${bankConfig.max_interest_rate}%
+- Base Rate: ${bankConfig.base_rate}%
+- Target Margin: ${bankConfig.target_margin}%
+- Max Credit Limit: $${bankConfig.max_credit_limit.toLocaleString()}
+- Preferred Sectors: ${bankConfig.preferred_sectors.join(', ')}
+- Collateral Policy: ${bankConfig.collateral_policy}
+- ESG Focus: ${bankConfig.esg_focus ? 'Yes' : 'No'}
+- ESG Exclusions: ${bankConfig.esg_exclusions.join(', ') || 'None'}
+- Carbon Threshold: ${bankConfig.carbon_threshold} tCO2/year
+- ESG Policy: ${bankConfig.esg_policy}
+- Competitive Index: ${bankConfig.competitive_index}/10
+- Speed vs Quality: ${bankConfig.speed_vs_quality}
 
-Generate a professional, concise loan offer (2-3 sentences) that reflects the bank's style and requirements.`
+Project Information:
+- Estimated Project Emissions: ${estimatedEmissions} tCO2/year
+- Project Purpose: ${intent.purpose}
+
+Generate a professional, concise loan offer (2-3 sentences) that reflects the bank's style and requirements. Consider ESG factors if the bank has ESG focus.`
 
     const userContent = `Company: ${intent.companyName}
 Requested Amount: $${intent.amount.toLocaleString()}
 Duration: ${intent.duration} months
-Purpose: ${intent.purpose}`
+Purpose: ${intent.purpose}
+Estimated Project Emissions: ${estimatedEmissions} tCO2/year`
 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -65,15 +97,26 @@ export const generateCounterOfferLLM = async (conversation, bankConfig, bankName
       `${msg.sender}: ${msg.content}`
     ).join('\n')
 
+    const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
+
     const systemPrompt = `You are an AI representing ${bankName}. Based on the ongoing negotiation and your bank's configuration, generate a counter-offer response. Consider the company's previous response and adjust terms accordingly while staying within your bank's parameters.
 
 Bank Configuration:
-- Risk Tolerance: ${bankConfig.riskTolerance}
-- Preferred Interest Rate Range: ${bankConfig.preferredInterestRate}
-- Negotiation Style: ${bankConfig.negotiationStyle}
-- Flexibility: ${bankConfig.flexibility}
+- Risk Appetite: ${bankConfig.risk_appetite}
+- Interest Rate Range: ${bankConfig.min_interest_rate}% - ${bankConfig.max_interest_rate}%
+- ESG Focus: ${bankConfig.esg_focus ? 'Yes' : 'No'}
+- ESG Exclusions: ${bankConfig.esg_exclusions.join(', ') || 'None'}
+- Carbon Threshold: ${bankConfig.carbon_threshold} tCO2/year
+- ESG Policy: ${bankConfig.esg_policy}
+- Competitive Index: ${bankConfig.competitive_index}/10
+- Speed vs Quality: ${bankConfig.speed_vs_quality}
+- Collateral Policy: ${bankConfig.collateral_policy}
 
-Generate a professional counter-offer (2-3 sentences) that shows willingness to negotiate while protecting the bank's interests.`
+Project Information:
+- Estimated Project Emissions: ${estimatedEmissions} tCO2/year
+- Project Purpose: ${intent.purpose}
+
+Generate a professional counter-offer (2-3 sentences) that shows willingness to negotiate while protecting the bank's interests. Consider ESG factors if the bank has ESG focus.`
 
     const userContent = `Previous conversation:
 ${chatHistory}
@@ -111,17 +154,29 @@ export const evaluateOfferLLM = async (intent, bankOffer, companyConfig, convers
       conversation.map(msg => `${msg.sender}: ${msg.content}`).join('\n') : 
       'This is the first offer from the bank.'
 
+    const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
+
     const systemPrompt = `You are an AI representing ${intent.companyName}. Based on your company's configuration and the bank's offer, decide whether to accept the offer or provide a counter-offer. Be realistic about what terms are acceptable.
 
 Company Configuration:
-- Urgency: ${companyConfig.urgency}
-- Acceptable Interest Rate: ${companyConfig.acceptableInterestRate}
-- Max Acceptable Rate: ${companyConfig.maxAcceptableRate}%
-- Preferred Duration: ${companyConfig.preferredDuration}
-- Collateral Availability: ${companyConfig.collateralAvailability}
-- Credit Score: ${companyConfig.creditScore}
-- Negotiation Style: ${companyConfig.negotiationStyle}
-- Priority Factors: ${companyConfig.priorityFactors.join(', ')}
+- Max Acceptable Rate: ${companyConfig.max_acceptable_rate}%
+- Min Amount Required: $${companyConfig.min_amount_required.toLocaleString()}
+- ESG Priority: ${companyConfig.esg_priority}
+- ESG Max Emissions: ${companyConfig.esg_max_emissions} tCO2/year
+- Min ESG Rating: ${companyConfig.min_esg_rating}/100
+- Decision Strategy: ${companyConfig.decision_strategy}
+- Negotiation Strategy: ${companyConfig.negotiation_strategy}
+- Preferred Bank Features: ${companyConfig.preferred_bank_features.join(', ')}
+
+Project Information:
+- Estimated Project Emissions: ${estimatedEmissions} tCO2/year
+- Project Purpose: ${intent.purpose}
+
+Decision Guidelines:
+- If estimated emissions exceed esg_max_emissions and esg_priority is "High", reject the offer
+- If interest rate exceeds max_acceptable_rate, reject or counter-offer
+- If amount is less than min_amount_required, reject or counter-offer
+- Consider decision_strategy: "ESG_Focused" prioritizes ESG, "Cost_Focused" prioritizes cost, "Balanced" considers both
 
 If the offer is acceptable, respond with acceptance. If not, provide a professional counter-offer (2-3 sentences) that addresses your concerns while being reasonable.`
 
@@ -129,6 +184,7 @@ If the offer is acceptable, respond with acceptance. If not, provide a professio
 Amount: $${intent.amount.toLocaleString()}
 Duration: ${intent.duration} months
 Purpose: ${intent.purpose}
+Estimated Project Emissions: ${estimatedEmissions} tCO2/year
 
 Conversation so far:
 ${chatHistory}

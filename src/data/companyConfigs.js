@@ -1,6 +1,24 @@
 // Company configurations for negotiation preferences
 export const companyConfigs = {
   "TechStart Solutions": {
+    // Interest Tolerance
+    max_acceptable_rate: 8.5,
+    min_amount_required: 100000,
+    
+    // ESG Priority/Thresholds
+    esg_priority: "Medium",
+    esg_max_emissions: 500, // tCO2/year
+    min_esg_rating: 60,
+    
+    // Decision Strategy
+    decision_strategy: "Cost_Focused",
+    negotiation_strategy: "CounterOfferTop2",
+    
+    // Other Preferences
+    preferred_bank_features: ["NoCollateral", "FastProcessing"],
+    communication_tone: "Professional",
+    
+    // Legacy fields for backward compatibility
     urgency: "high",
     acceptableInterestRate: "up to 8%",
     collateralAvailability: "limited equipment",
@@ -15,6 +33,24 @@ export const companyConfigs = {
     riskProfile: "medium"
   },
   "Green Energy Corp": {
+    // Interest Tolerance
+    max_acceptable_rate: 7.0,
+    min_amount_required: 500000,
+    
+    // ESG Priority/Thresholds
+    esg_priority: "High",
+    esg_max_emissions: 100, // tCO2/year - very strict
+    min_esg_rating: 85,
+    
+    // Decision Strategy
+    decision_strategy: "ESG_Focused",
+    negotiation_strategy: "WalkAwayIfNoESG",
+    
+    // Other Preferences
+    preferred_bank_features: ["ESGCommitment", "LongTermPartnership"],
+    communication_tone: "Professional",
+    
+    // Legacy fields for backward compatibility
     urgency: "medium",
     acceptableInterestRate: "up to 6%",
     collateralAvailability: "substantial assets and equipment",
@@ -29,6 +65,24 @@ export const companyConfigs = {
     riskProfile: "low-medium"
   },
   "HealthTech Innovations": {
+    // Interest Tolerance
+    max_acceptable_rate: 7.5,
+    min_amount_required: 200000,
+    
+    // ESG Priority/Thresholds
+    esg_priority: "Medium",
+    esg_max_emissions: 300, // tCO2/year
+    min_esg_rating: 70,
+    
+    // Decision Strategy
+    decision_strategy: "Balanced",
+    negotiation_strategy: "CounterOfferTop2",
+    
+    // Other Preferences
+    preferred_bank_features: ["IndustryExpertise", "FlexibleTerms"],
+    communication_tone: "Professional",
+    
+    // Legacy fields for backward compatibility
     urgency: "medium-high",
     acceptableInterestRate: "up to 7%",
     collateralAvailability: "intellectual property and equipment",
@@ -43,6 +97,24 @@ export const companyConfigs = {
     riskProfile: "medium-high"
   },
   "Manufacturing Plus": {
+    // Interest Tolerance
+    max_acceptable_rate: 7.0,
+    min_amount_required: 750000,
+    
+    // ESG Priority/Thresholds
+    esg_priority: "Low",
+    esg_max_emissions: 800, // tCO2/year - more lenient
+    min_esg_rating: 50,
+    
+    // Decision Strategy
+    decision_strategy: "Cost_Focused",
+    negotiation_strategy: "CounterOfferTop2",
+    
+    // Other Preferences
+    preferred_bank_features: ["CompetitiveRates", "EstablishedRelationship"],
+    communication_tone: "Professional",
+    
+    // Legacy fields for backward compatibility
     urgency: "low",
     acceptableInterestRate: "up to 6.5%",
     collateralAvailability: "extensive machinery and property",
@@ -57,6 +129,24 @@ export const companyConfigs = {
     riskProfile: "low"
   },
   "Retail Dynamics": {
+    // Interest Tolerance
+    max_acceptable_rate: 9.5,
+    min_amount_required: 150000,
+    
+    // ESG Priority/Thresholds
+    esg_priority: "Low",
+    esg_max_emissions: 600, // tCO2/year
+    min_esg_rating: 55,
+    
+    // Decision Strategy
+    decision_strategy: "Cost_Focused",
+    negotiation_strategy: "CounterOfferTop2",
+    
+    // Other Preferences
+    preferred_bank_features: ["QuickApproval", "SeasonalFlexibility"],
+    communication_tone: "Results-Oriented",
+    
+    // Legacy fields for backward compatibility
     urgency: "high",
     acceptableInterestRate: "up to 9%",
     collateralAvailability: "inventory and store assets",
@@ -95,18 +185,57 @@ export const generateCompanyConfig = (companyName, intent) => {
   let urgency = "medium"
   let maxRate = 7.5
   let riskProfile = "medium"
+  let esgPriority = "Medium"
+  let esgMaxEmissions = 500
+  let minEsgRating = 60
   
   if (amount > 1000000) {
     urgency = "low"
     maxRate = 7.0
     riskProfile = "low-medium"
+    esgPriority = "High"
+    esgMaxEmissions = 300
+    minEsgRating = 75
   } else if (amount < 250000) {
     urgency = "high"
     maxRate = 9.0
     riskProfile = "medium-high"
+    esgPriority = "Low"
+    esgMaxEmissions = 800
+    minEsgRating = 50
+  }
+
+  // Adjust ESG preferences based on industry
+  if (industry === "renewable energy") {
+    esgPriority = "High"
+    esgMaxEmissions = 100
+    minEsgRating = 85
+  } else if (industry === "technology") {
+    esgPriority = "Medium"
+    esgMaxEmissions = 400
+    minEsgRating = 65
+  } else if (industry === "manufacturing") {
+    esgPriority = "Low"
+    esgMaxEmissions = 700
+    minEsgRating = 55
   }
 
   return {
+    // New schema fields
+    max_acceptable_rate: maxRate,
+    min_amount_required: Math.max(amount * 0.8, 50000), // At least 80% of requested amount
+    
+    esg_priority: esgPriority,
+    esg_max_emissions: esgMaxEmissions,
+    min_esg_rating: minEsgRating,
+    
+    decision_strategy: esgPriority === "High" ? "ESG_Focused" : "Cost_Focused",
+    negotiation_strategy: "CounterOfferTop2",
+    
+    preferred_bank_features: ["CompetitiveRates", "ProfessionalService"],
+    communication_tone: "Professional",
+    
+    // Legacy fields for backward compatibility
     urgency,
     acceptableInterestRate: `up to ${maxRate}%`,
     collateralAvailability: "standard business assets",
