@@ -328,7 +328,29 @@ Task: Evaluate the above offer against the customer's requirements:
 2. Among acceptable offers, consider ESG impact using Effective_Score = interest_rate + (estimated_project_emissions / 100)
 3. If esg_priority is "High" and estimated_project_emissions > ${companyConfig.esg_max_emissions}, reject the offer
 
-If the offer is acceptable, respond with acceptance and reasoning. If not, provide a professional counter-offer that addresses your concerns while being reasonable.`
+IMPORTANT: Format your response as follows:
+1. First, provide the JSON decision (exactly as specified below)
+2. Then, provide a detailed explanation paragraph
+
+Required JSON Schema (exactly as specified):
+{
+  "decision": "ACCEPT" or "REJECT",
+  "reasoning": "Brief explanation of the decision",
+  "counter_offer_terms": {
+    "requested_amount": [number or null],
+    "desired_term": [number or null],
+    "max_interest_rate": [number or null],
+    "additional_requirements": "[string or null]"
+  }
+}
+
+After the JSON, provide a detailed explanation paragraph that reflects the company's decision strategy and ESG priorities.
+
+DECISION CRITERIA:
+- ACCEPT if the offer meets or exceeds the company's requirements
+- REJECT if the offer does not meet the company's minimum requirements
+- Always provide clear reasoning for your decision
+- If REJECT, suggest specific counter-offer terms that would be acceptable`
 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -349,10 +371,29 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
 
     const responseContent = response.data.choices[0].message.content
     
-    // Determine if this is an acceptance or counter-offer
-    const isAcceptance = responseContent.toLowerCase().includes('accept') || 
-                        responseContent.toLowerCase().includes('agree') ||
-                        responseContent.toLowerCase().includes('deal')
+    // Try to parse the JSON decision from the response
+    const jsonMatch = responseContent.match(/\{[\s\S]*\}/)
+    let decision = null
+    let isAcceptance = false
+    
+    if (jsonMatch) {
+      try {
+        const decisionData = JSON.parse(jsonMatch[0])
+        decision = decisionData.decision
+        isAcceptance = decision === 'ACCEPT'
+      } catch (error) {
+        console.error('Error parsing decision JSON:', error)
+        // Fallback to old logic if JSON parsing fails
+        isAcceptance = responseContent.toLowerCase().includes('accept') || 
+                      responseContent.toLowerCase().includes('agree') ||
+                      responseContent.toLowerCase().includes('deal')
+      }
+    } else {
+      // Fallback to old logic if no JSON found
+      isAcceptance = responseContent.toLowerCase().includes('accept') || 
+                    responseContent.toLowerCase().includes('agree') ||
+                    responseContent.toLowerCase().includes('deal')
+    }
     
     // Try to parse any JSON in the response for structured counter-offers
     const parsedResponse = parseOfferFromResponse(responseContent)
@@ -360,6 +401,7 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
     return {
       content: responseContent,
       isAcceptance,
+      decision,
       offer: parsedResponse.offer
     }
   } catch (error) {
