@@ -96,7 +96,7 @@ export const generateWFAPOfferLLM = async (intent, bankConfig, bankName) => {
     // Calculate estimated project emissions
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
 
-    const systemPrompt = `You are an AI assistant operating as a loan officer for ${bankName} following the WFAP 1.0 protocol. You will receive a WFAP-compliant Intent message and must respond with a structured offer that includes all required WFAP fields.
+    const systemPrompt = `You are a loan officer for ${bankName} following the WFAP 1.0 protocol. You will receive a WFAP-compliant Intent message and must respond with a structured offer that includes all required WFAP fields.
 
 Bank Configuration:
 - Risk Appetite: ${bankConfig.risk_appetite}
@@ -219,7 +219,7 @@ export const generateOfferLLM = async (intent, bankConfig, bankName) => {
     // Calculate estimated project emissions based on purpose and amount
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
 
-    const systemPrompt = `You are an AI assistant operating as a loan officer for ${bankName}. You will receive a loan request and must respond with a JSON offer and a brief explanation. Only output valid JSON and concise reasoning. Adhere to the bank's policies provided.
+    const systemPrompt = `You are a loan officer for ${bankName}. You will receive a loan request and must respond with a JSON offer and a brief explanation. Only output valid JSON and concise reasoning. Adhere to the bank's policies provided.
 
 Bank Configuration:
 - Risk Appetite: ${bankConfig.risk_appetite}
@@ -330,7 +330,7 @@ export const generateCounterOfferLLM = async (conversation, bankConfig, bankName
 
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
 
-    const systemPrompt = `You are an AI assistant operating as a loan officer for ${bankName}. Based on the ongoing negotiation and your bank's configuration, generate a counter-offer response in JSON format. Consider the company's previous response and adjust terms accordingly while staying within your bank's parameters.
+    const systemPrompt = `You are a loan officer for ${bankName}. Based on the ongoing negotiation and your bank's configuration, generate a counter-offer response in JSON format. Consider the company's previous response and adjust terms accordingly while staying within your bank's parameters.
 
 Bank Configuration:
 - Risk Appetite: ${bankConfig.risk_appetite}
@@ -797,7 +797,7 @@ export const generateConversationSummary = async (conversation, intent, deal) =>
       .map(msg => `${msg.sender}: ${msg.content}`)
       .join('\n')
 
-    const systemPrompt = `You are an AI assistant tasked with creating a comprehensive audit summary of a completed loan negotiation between ${intent.companyName} and ${deal.bankName}. Create a professional summary that includes:
+    const systemPrompt = `You are tasked with creating a comprehensive audit summary of a completed loan negotiation between ${intent.companyName} and ${deal.bankName}. Create a professional summary that includes:
 
 1. Final agreed terms (extract from the conversation)
 2. Key negotiation points and concessions made
@@ -858,7 +858,7 @@ Generate a comprehensive audit summary of this negotiation.`
  */
 export const generateWFAPCounterOfferLLM = async (originalOffer, intent, companyConfig, negotiationHistory = []) => {
   try {
-    const systemPrompt = `You are an AI assistant representing ${intent.companyName} in a WFAP (Wells Fargo Agent Protocol) negotiation. You must generate a counter-offer that:
+    const systemPrompt = `You are representing ${intent.companyName} in a WFAP (Wells Fargo Agent Protocol) negotiation. You must generate a counter-offer that:
 
 1. Follows WFAP 1.0 protocol standards
 2. Considers the company's ESG priorities and financial constraints
@@ -958,7 +958,7 @@ Format as JSON with the following structure:
  */
 export const generateWFAPRejectionLLM = async (offer, intent, companyConfig, reason = null) => {
   try {
-    const systemPrompt = `You are an AI assistant representing ${intent.companyName} in a WFAP negotiation. Generate a professional rejection message that:
+    const systemPrompt = `You are representing ${intent.companyName} in a WFAP negotiation. Generate a professional rejection message that:
 
 1. Follows WFAP 1.0 protocol standards
 2. Provides clear, professional reasoning for the rejection
@@ -1042,7 +1042,7 @@ Format as JSON:
  */
 export const generateWFAPAcceptanceLLM = async (offer, intent, companyConfig, decisionFactors = {}) => {
   try {
-    const systemPrompt = `You are an AI assistant representing ${intent.companyName} in a WFAP negotiation. Generate a professional acceptance message that:
+    const systemPrompt = `You are representing ${intent.companyName} in a WFAP negotiation. Generate a professional acceptance message that:
 
 1. Follows WFAP 1.0 protocol standards
 2. Provides clear rationale for the acceptance decision

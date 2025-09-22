@@ -203,13 +203,10 @@ End of Audit Log
     setError(null)
     
     try {
-      console.log('Generating offer for:', { intent, bankConfig, bankName: deal.bankName })
       const response = await generateOfferLLM(intent, bankConfig, deal.bankName)
-      console.log('Offer response:', response)
       
       // Handle both old string format and new object format
       const offerContent = typeof response === 'string' ? response : response.content
-      console.log('Offer content:', offerContent)
       
       addMessageToSession(dealId, {
         sender: deal.bankName,
@@ -676,7 +673,7 @@ End of Audit Log
             {showWfapAudit ? (
               <WFAPAuditLog 
                 messages={wfapMessages}
-                onMessageClick={(message) => console.log('WFAP message clicked:', message)}
+                onMessageClick={(message) => {/* Handle message click */}}
                 showFilters={false}
               />
             ) : (

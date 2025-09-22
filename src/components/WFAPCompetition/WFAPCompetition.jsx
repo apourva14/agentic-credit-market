@@ -454,7 +454,7 @@ const WFAPCompetition = ({
                   </button>
                   <button
                     className="btn btn-secondary btn-sm"
-                    onClick={() => console.log('View details:', offer)}
+                    onClick={() => {/* Handle view details */}}
                   >
                     View Details
                   </button>

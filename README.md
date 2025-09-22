@@ -6,7 +6,7 @@ A modern React-based web application for facilitating credit line requests betwe
 
 ### 💬 **Negotiation Chat Window**
 - **Side Panel Interface**: Click any ongoing deal card to open a 50% width sliding drawer
-- **Real-time LLM Integration**: Powered by OpenRouter API with gpt-oss-20b:free
+- **Real-time LLM Integration**: Powered by OpenRouter API
 - **Role-based Workflows**: Different conversation flows for Banks and Companies
 - **Chat History Persistence**: All conversations stored in localStorage
 - **Multi-turn Negotiations**: Full support for offers, counter-offers, and acceptances
@@ -14,12 +14,12 @@ A modern React-based web application for facilitating credit line requests betwe
 ### 🏦 **Bank Negotiation Flow**
 1. **Identity Verification**: Authenticate company identity before proceeding
 2. **Generate Offers**: AI creates tailored loan offers based on bank configuration
-3. **Counter-offers**: Respond to company negotiations with AI-generated responses
+3. **Counter-offers**: Respond to company negotiations with intelligent responses
 4. **Deal Management**: Accept final terms or cancel negotiations
 
 ### 🏢 **Company Negotiation Flow**
 1. **View Bank Offers**: Review detailed loan terms and conditions
-2. **AI Evaluation**: Automatically evaluate offers against company preferences
+2. **Intelligent Evaluation**: Automatically evaluate offers against company preferences
 3. **Smart Negotiations**: Generate counter-offers or accept favorable terms
 4. **Flexible Decision Making**: Manual accept/reject or AI-assisted evaluation
 
@@ -69,7 +69,7 @@ A modern React-based web application for facilitating credit line requests betwe
 - **Date Handling**: date-fns for timestamp formatting
 - **UUID**: uuid for unique identifier generation
 - **HTTP Client**: axios for LLM API calls
-- **AI Integration**: OpenRouter API with gpt-oss-20b:free model
+- **LLM Integration**: OpenRouter API integration
 - **Storage**: localStorage for chat history persistence
 
 ## Project Structure
@@ -250,7 +250,7 @@ Companies have profiles that include:
 
 ### LLM Integration
 The system uses OpenRouter API with:
-- gpt-oss-20b:free model for high-quality responses
+- High-quality language model for intelligent responses
 - Context-aware prompts based on configurations
 - Multi-turn conversation support
 - Error handling with retry mechanisms
@@ -363,7 +363,7 @@ VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 
 ## API Costs
 
-The application uses OpenRouter API which has usage-based pricing. The `gpt-oss-20b:free` model is cost-effective for this use case. Monitor your usage through the OpenRouter dashboard.
+The application uses OpenRouter API which has usage-based pricing. Monitor your usage through the OpenRouter dashboard.
 
 ---
 
