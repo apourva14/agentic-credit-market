@@ -47,7 +47,7 @@ const WFAPEnterprise = ({
       
       setSystemMetrics(metrics)
     } catch (error) {
-      console.error('Error loading system metrics:', error)
+      // Error loading system metrics
     } finally {
       setIsLoading(false)
     }
@@ -118,7 +118,7 @@ const WFAPEnterprise = ({
       
       setAuditLogs(logs)
     } catch (error) {
-      console.error('Error loading audit logs:', error)
+      // Error loading audit logs
     }
   }
 
@@ -157,7 +157,7 @@ const WFAPEnterprise = ({
       
       setSystemHealth(health)
     } catch (error) {
-      console.error('Error checking system health:', error)
+      // Error checking system health
     }
   }
 

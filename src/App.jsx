@@ -213,7 +213,7 @@ function App() {
     }
 
     if (!intent) {
-      console.error('Intent not found for deal:', deal)
+      // Intent not found for deal
       return
     }
 
@@ -270,7 +270,7 @@ function App() {
       }
     } catch (error) {
       if (!abortController.signal.aborted) {
-        console.error('Market simulation error:', error)
+        // Market simulation error
         addActivity(`❌ Simulation error: ${error.message}`, 'error')
       }
     } finally {

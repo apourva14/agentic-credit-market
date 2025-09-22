@@ -47,7 +47,7 @@ const WFAPESG = ({
         onCarbonImpactCalculated(carbon)
       }
     } catch (error) {
-      console.error('ESG analysis error:', error)
+      // ESG analysis error
     } finally {
       setIsAnalyzing(false)
     }

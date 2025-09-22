@@ -66,7 +66,7 @@ const WFAPAI = ({
         onRecommendationProvided(recommendations)
       }
     } catch (error) {
-      console.error('AI analysis error:', error)
+      // AI analysis error
     } finally {
       setIsAnalyzing(false)
     }

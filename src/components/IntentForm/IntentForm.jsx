@@ -160,7 +160,7 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
       })
       
     } catch (error) {
-      console.error('Error creating intent:', error)
+      // Error creating intent
     } finally {
       setIsSubmitting(false)
     }

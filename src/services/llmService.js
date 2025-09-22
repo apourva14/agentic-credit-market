@@ -72,8 +72,7 @@ const parseOfferFromResponse = (responseContent) => {
       offer: null
     }
   } catch (error) {
-    console.error('Error parsing offer JSON:', error)
-    console.error('Response content:', responseContent)
+    // Error parsing offer JSON
     // Return the original content even if JSON parsing fails
     return {
       content: responseContent,
@@ -177,7 +176,7 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -203,7 +202,7 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
       wfapMessage: wfapOffer
     }
   } catch (error) {
-    console.error('WFAP Offer generation error:', error)
+    // WFAP Offer generation error
     throw new Error(`Failed to generate WFAP-compliant offer: ${error.response?.data?.error?.message || error.message}`)
   }
 }
@@ -292,7 +291,7 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -310,8 +309,7 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
     const parsedResponse = parseOfferFromResponse(responseContent)
     return parsedResponse
   } catch (error) {
-    console.error('OpenRouter API error:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // OpenRouter API error
     throw new Error(`Failed to generate offer: ${error.response?.data?.error?.message || error.message}`)
   }
 }
@@ -381,7 +379,7 @@ After the JSON, provide a detailed explanation paragraph explaining the changes 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -399,8 +397,7 @@ After the JSON, provide a detailed explanation paragraph explaining the changes 
     const parsedResponse = parseOfferFromResponse(responseContent)
     return parsedResponse
   } catch (error) {
-    console.error('OpenRouter API error:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // OpenRouter API error
     throw new Error(`Failed to generate counter-offer: ${error.response?.data?.error?.message || error.message}`)
   }
 }
@@ -480,7 +477,7 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -510,8 +507,7 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
       offer: parsedResponse.offer
     }
   } catch (error) {
-    console.error('OpenRouter API error:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // OpenRouter API error
     throw new Error(`Failed to evaluate offer: ${error.response?.data?.error?.message || error.message}`)
   }
 }
@@ -601,7 +597,7 @@ Provide a structured response with clear ACCEPT/NEGOTIATE/REJECT decisions and r
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -658,7 +654,7 @@ Provide a structured response with clear ACCEPT/NEGOTIATE/REJECT decisions and r
       wfapCompliant: true
     }
   } catch (error) {
-    console.error('WFAP evaluation error:', error)
+    // WFAP evaluation error
     throw new Error(`Failed to evaluate WFAP offers: ${error.response?.data?.error?.message || error.message}`)
   }
 }
@@ -727,7 +723,7 @@ Provide a structured response with clear ACCEPT/NEGOTIATE/REJECT decisions and r
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -783,8 +779,7 @@ Provide a structured response with clear ACCEPT/NEGOTIATE/REJECT decisions and r
       decisions
     }
   } catch (error) {
-    console.error('OpenRouter API error:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // OpenRouter API error
     throw new Error(`Failed to evaluate all offers: ${error.response?.data?.error?.message || error.message}`)
   }
 }
@@ -830,7 +825,7 @@ Generate a comprehensive audit summary of this negotiation.`
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -846,7 +841,7 @@ Generate a comprehensive audit summary of this negotiation.`
 
     return response.data.choices[0].message.content
   } catch (error) {
-    console.error('OpenRouter API error:', error)
+    // OpenRouter API error
     throw new Error('Failed to generate summary. Please try again.')
   }
 }
@@ -917,7 +912,7 @@ Format as JSON with the following structure:
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -948,7 +943,7 @@ Format as JSON with the following structure:
       llmReasoning: counterOfferData
     }
   } catch (error) {
-    console.error('WFAP Counter-offer generation error:', error)
+    // WFAP Counter-offer generation error
     throw new Error('Failed to generate WFAP counter-offer')
   }
 }
@@ -1001,7 +996,7 @@ Format as JSON:
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -1032,7 +1027,7 @@ Format as JSON:
       llmReasoning: rejectionData
     }
   } catch (error) {
-    console.error('WFAP Rejection generation error:', error)
+    // WFAP Rejection generation error
     throw new Error('Failed to generate WFAP rejection')
   }
 }
@@ -1093,7 +1088,7 @@ Format as JSON:
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -1124,7 +1119,7 @@ Format as JSON:
       llmReasoning: acceptanceData
     }
   } catch (error) {
-    console.error('WFAP Acceptance generation error:', error)
+    // WFAP Acceptance generation error
     throw new Error('Failed to generate WFAP acceptance')
   }
 }
@@ -1169,7 +1164,7 @@ Provide analysis in JSON format:
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -1201,7 +1196,7 @@ Provide analysis in JSON format:
       messageId: message.messageId
     }
   } catch (error) {
-    console.error('WFAP Message analysis error:', error)
+    // WFAP Message analysis error
     throw new Error('Failed to analyze WFAP message')
   }
 }
@@ -1253,7 +1248,7 @@ Generate strategic recommendations in JSON format:
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-oss-20b:free',
+        model: 'openai/gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -1283,7 +1278,7 @@ Generate strategic recommendations in JSON format:
       }
     }
   } catch (error) {
-    console.error('WFAP Strategy generation error:', error)
+    // WFAP Strategy generation error
     throw new Error('Failed to generate WFAP strategy')
   }
 }

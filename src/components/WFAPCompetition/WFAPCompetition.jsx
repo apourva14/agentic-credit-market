@@ -102,7 +102,7 @@ const WFAPCompetition = ({
       setCompetitionState('active')
       setCurrentRound(1)
     } catch (error) {
-      console.error('Competition initialization error:', error)
+      // Competition initialization error
       setCompetitionState('error')
     } finally {
       setIsProcessing(false)
@@ -148,7 +148,7 @@ const WFAPCompetition = ({
           processingResult: offer.processingResult
         })
       } catch (error) {
-        console.error(`Error generating offer for ${bankName}:`, error)
+        // Error generating offer
       }
     }
     
@@ -200,7 +200,7 @@ const WFAPCompetition = ({
       
       setCurrentRound(prev => prev + 1)
     } catch (error) {
-      console.error('Competition round error:', error)
+      // Competition round error
     } finally {
       setIsProcessing(false)
     }
@@ -229,7 +229,7 @@ const WFAPCompetition = ({
           llmReasoning: counterOffer.llmReasoning
         })
       } catch (error) {
-        console.error(`Error generating counter-offer for ${offer.bankName}:`, error)
+        // Error generating counter-offer
       }
     }
     

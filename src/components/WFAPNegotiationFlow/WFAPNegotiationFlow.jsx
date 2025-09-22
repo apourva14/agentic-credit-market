@@ -73,7 +73,7 @@ const WFAPNegotiationFlow = ({
 
       setNegotiationStep('sent')
     } catch (error) {
-      console.error('Counter-offer error:', error)
+      // Counter-offer error
       setError(error.message)
     } finally {
       setIsProcessing(false)
@@ -106,7 +106,7 @@ const WFAPNegotiationFlow = ({
 
       setNegotiationStep('accepted')
     } catch (error) {
-      console.error('Acceptance error:', error)
+      // Acceptance error
       setError(error.message)
     } finally {
       setIsProcessing(false)
@@ -143,7 +143,7 @@ const WFAPNegotiationFlow = ({
 
       setNegotiationStep('rejected')
     } catch (error) {
-      console.error('Rejection error:', error)
+      // Rejection error
       setError(error.message)
     } finally {
       setIsProcessing(false)

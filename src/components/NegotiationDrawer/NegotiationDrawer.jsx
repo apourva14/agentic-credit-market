@@ -123,7 +123,7 @@ const NegotiationDrawer = ({
       setConversationSummary(summary)
       cacheSummary(dealId, summary)
     } catch (error) {
-      console.error('Error generating summary:', error)
+      // Error generating summary
       setError('Failed to generate summary')
     } finally {
       setIsGeneratingSummary(false)
@@ -217,7 +217,7 @@ End of Audit Log
       updateSessionStatus(dealId, 'in_progress')
       setChatSession(getChatSession(dealId))
     } catch (error) {
-      console.error('Error generating offer:', error)
+      // Error generating offer
       setError(error.message)
     } finally {
       setIsLoading(false)
@@ -248,7 +248,7 @@ End of Audit Log
       
       setChatSession(getChatSession(dealId))
     } catch (error) {
-      console.error('Error generating counter-offer:', error)
+      // Error generating counter-offer
       setError(error.message)
     } finally {
       setIsLoading(false)

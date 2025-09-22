@@ -8,7 +8,7 @@ export const getChatSessions = () => {
     const stored = localStorage.getItem(CHAT_STORAGE_KEY)
     return stored ? JSON.parse(stored) : {}
   } catch (error) {
-    console.error('Error reading chat sessions:', error)
+    // Error reading chat sessions
     return {}
   }
 }
@@ -18,7 +18,7 @@ export const saveChatSessions = (sessions) => {
   try {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(sessions))
   } catch (error) {
-    console.error('Error saving chat sessions:', error)
+    // Error saving chat sessions
   }
 }
 
@@ -28,7 +28,7 @@ export const getCachedSummaries = () => {
     const stored = localStorage.getItem(SUMMARY_STORAGE_KEY)
     return stored ? JSON.parse(stored) : {}
   } catch (error) {
-    console.error('Error reading cached summaries:', error)
+    // Error reading cached summaries
     return {}
   }
 }
@@ -38,7 +38,7 @@ export const saveCachedSummaries = (summaries) => {
   try {
     localStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(summaries))
   } catch (error) {
-    console.error('Error saving cached summaries:', error)
+    // Error saving cached summaries
   }
 }
 
