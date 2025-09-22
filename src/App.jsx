@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Header from './components/Header/Header'
 import IntentForm from './components/IntentForm/IntentForm'
 import KanbanBoard from './components/KanbanBoard/KanbanBoard'
@@ -30,6 +30,7 @@ function App() {
   const [ongoingDeals, setOngoingDeals] = useState(sampleData.ongoingDeals)
   const [closedDeals, setClosedDeals] = useState(sampleData.closedDeals)
   const [nextIntentId, setNextIntentId] = useState(1004)
+  const nextIdRef = useRef(1004)
 
   // Negotiation drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -42,6 +43,13 @@ function App() {
   const [simulationAbortController, setSimulationAbortController] = useState(null)
 
   const permissions = rolePermissions[currentRole] || {}
+
+  // Initialize nextIdRef with highest existing ID + 1 to avoid collisions
+  useEffect(() => {
+    const allIds = [...intents.map(i => i.id), ...closedDeals.map(d => d.id)].filter(id => typeof id === 'number')
+    const maxId = allIds.length ? Math.max(...allIds) : 1003
+    nextIdRef.current = Math.max(nextIdRef.current, maxId + 1)
+  }, [intents, closedDeals])
 
   // Add activity to log
   const addActivity = (message, type = 'info') => {
@@ -106,15 +114,20 @@ function App() {
   const { filteredIntents, filteredOngoingDeals, filteredClosedDeals } = getFilteredData()
 
   const handleCreateIntent = (intentData) => {
+    // Atomic ID generation using ref to avoid race conditions during rapid creation
+    const newId = nextIdRef.current
+    nextIdRef.current += 1
+
     const newIntent = {
-      id: nextIntentId,
+      id: newId,
       ...intentData,
       status: 'open',
       timestamp: new Date().toISOString()
     }
-    
+
     setIntents(prev => [...prev, newIntent])
-    setNextIntentId(prev => prev + 1)
+    // Keep state in sync for any UI that reads nextIntentId
+    setNextIntentId(prev => Math.max(prev, nextIdRef.current))
     return newIntent
   }
 
