@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { convertToWFAPIntent } from '../../services/wfapService'
 
 const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
   const [formData, setFormData] = useState({
@@ -18,7 +19,11 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
     
     // ESG preferences
     excludeHighCarbon: false,
-    preferredGreenCertification: ''
+    preferredGreenCertification: '',
+    
+    // WFAP-specific fields
+    maxRate: '',
+    esgPriority: 'Medium'
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
@@ -82,8 +87,8 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
     setIsSubmitting(true)
     
     try {
-      // Create intent with full schema
-      const intent = {
+      // Create intent with full schema including WFAP fields
+      const intentData = {
         // Basic fields for backward compatibility
         companyName: formData.companyName.trim(),
         amount: parseInt(formData.amount),
@@ -112,6 +117,10 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
           preferred_green_certification: formData.preferredGreenCertification || 'None'
         },
         
+        // WFAP-specific fields
+        maxRate: formData.maxRate ? parseFloat(formData.maxRate) : undefined,
+        esgPriority: formData.esgPriority,
+        
         // Additional fields for internal use
         industry: formData.industry || 'General Business',
         creditScore: formData.creditScore ? parseInt(formData.creditScore) : 700,
@@ -119,6 +128,15 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
         excludeHighCarbon: formData.excludeHighCarbon,
         greenCertification: formData.preferredGreenCertification || 'None',
         annualRevenue: formData.annualRevenue ? parseInt(formData.annualRevenue) : 1000000
+      }
+      
+      // Convert to WFAP-compliant intent
+      const wfapIntent = convertToWFAPIntent(intentData)
+      
+      // Merge WFAP fields with existing intent data
+      const intent = {
+        ...intentData,
+        ...wfapIntent
       }
       
       await onCreateIntent(intent)
@@ -136,7 +154,9 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
         creditScore: '',
         esgProfile: '',
         excludeHighCarbon: false,
-        preferredGreenCertification: ''
+        preferredGreenCertification: '',
+        maxRate: '',
+        esgPriority: 'Medium'
       })
       
     } catch (error) {
@@ -417,6 +437,49 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
                     <option value="GreenBondPrinciples">Green Bond Principles</option>
                     <option value="ClimateBondsInitiative">Climate Bonds Initiative</option>
                     <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* WFAP Protocol Fields */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Maximum Acceptable Rate */}
+                <div className="space-y-1">
+                  <label htmlFor="maxRate" className="form-label">
+                    Maximum Acceptable Rate (%)
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="number"
+                      id="maxRate"
+                      name="maxRate"
+                      className="form-input flex-1"
+                      value={formData.maxRate}
+                      onChange={handleChange}
+                      placeholder="8.5"
+                      min="0"
+                      max="20"
+                      step="0.1"
+                    />
+                    <span className="text-gray-500 font-medium ml-2">%</span>
+                  </div>
+                </div>
+                
+                {/* ESG Priority */}
+                <div className="space-y-1">
+                  <label htmlFor="esgPriority" className="form-label">
+                    ESG Priority
+                  </label>
+                  <select
+                    id="esgPriority"
+                    name="esgPriority"
+                    className="form-input"
+                    value={formData.esgPriority}
+                    onChange={handleChange}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
                   </select>
                 </div>
               </div>

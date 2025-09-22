@@ -1,7 +1,9 @@
 import IntentCard from '../IntentCard/IntentCard'
 import OngoingDealCard from '../OngoingDealCard/OngoingDealCard'
 import ClosedDealCard from '../ClosedDealCard/ClosedDealCard'
+import WFAPStatus from '../WFAPStatus/WFAPStatus'
 import { canViewOngoingDeal } from '../../utils/rolePermissions'
+import { MESSAGE_TYPES } from '../../schemas/wfapSchemas'
 
 const KanbanBoard = ({
   intents,
@@ -37,6 +39,27 @@ const KanbanBoard = ({
     }
   }
 
+  // Calculate WFAP compliance statistics
+  const getWFAPStats = () => {
+    const allIntents = [...intents, ...closedDeals]
+    const wfapCompliantIntents = allIntents.filter(intent => 
+      intent.messageType === MESSAGE_TYPES.INTENT && 
+      intent.version === "WFAP/1.0" && 
+      intent.signature && 
+      intent.signatureCertId
+    )
+    
+    const totalMessages = allIntents.length
+    const wfapMessages = wfapCompliantIntents.length
+    
+    return {
+      totalMessages,
+      wfapMessages,
+      complianceRate: totalMessages > 0 ? (wfapMessages / totalMessages) * 100 : 0,
+      isEnabled: wfapMessages > 0
+    }
+  }
+
   const stats = getColumnStats()
 
   const EmptyState = ({ icon, title, subtitle }) => (
@@ -47,9 +70,23 @@ const KanbanBoard = ({
     </div>
   )
 
+  const wfapStats = getWFAPStats()
+
   return (
     <section className="py-6 bg-gray-50 min-h-[calc(100vh-140px)]">
       <div className="max-w-[1400px] mx-auto px-6">
+        {/* WFAP Protocol Status */}
+        {wfapStats.isEnabled && (
+          <div className="mb-6">
+            <WFAPStatus 
+              isEnabled={wfapStats.isEnabled}
+              version="WFAP/1.0"
+              messageCount={wfapStats.wfapMessages}
+              messages={[]} // Could be enhanced to pass actual messages
+            />
+          </div>
+        )}
+
         {/* Kanban Board */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Open Intents Column */}

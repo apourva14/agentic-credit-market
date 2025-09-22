@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
 import { availableBanks } from '../../data/sampleData'
+import { MESSAGE_TYPES } from '../../schemas/wfapSchemas'
 
 const IntentCard = ({ 
   intent, 
@@ -44,17 +45,56 @@ const IntentCard = ({
     }
   }
 
+  // WFAP-specific helper functions
+  const getESGPriorityColor = (priority) => {
+    switch (priority) {
+      case 'High': return 'text-green-600 bg-green-100'
+      case 'Medium': return 'text-yellow-600 bg-yellow-100'
+      case 'Low': return 'text-gray-600 bg-gray-100'
+      default: return 'text-gray-600 bg-gray-100'
+    }
+  }
+
+  const getESGPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'High': return '🌱'
+      case 'Medium': return '🌿'
+      case 'Low': return '🌳'
+      default: return '🌳'
+    }
+  }
+
+  const isWFAPCompliant = () => {
+    return intent.messageType === MESSAGE_TYPES.INTENT && 
+           intent.version === "WFAP/1.0" && 
+           intent.signature && 
+           intent.signatureCertId
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-soft hover:shadow-medium transition-all duration-200 hover:-translate-y-1 animate-slide-up">
       {/* Card Header */}
       <div className="flex justify-between items-start p-4 pb-3 border-b border-gray-100">
         <div className="flex flex-col">
-          <h3 className="text-base font-bold text-primary-600">
-            Intent #{intent.id}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-primary-600">
+              Intent #{intent.id}
+            </h3>
+            {isWFAPCompliant() && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                <span>🔒</span>
+                WFAP 1.0
+              </div>
+            )}
+          </div>
           <span className="text-xs text-gray-500 font-medium mt-0.5">
             {formatTimestamp(intent.timestamp)}
           </span>
+          {intent.messageId && (
+            <span className="text-xs text-blue-600 font-mono mt-1">
+              ID: {intent.messageId}
+            </span>
+          )}
         </div>
         
         {permissions.canDelete && (
@@ -89,10 +129,38 @@ const IntentCard = ({
               Duration
             </span>
             <div className="text-sm font-bold text-gray-900">
-              {intent.duration} months
+              {intent.duration || intent.term} months
             </div>
           </div>
         </div>
+
+        {/* WFAP-specific fields */}
+        {(intent.maxRate || intent.esgPriority) && (
+          <div className="grid grid-cols-2 gap-3">
+            {intent.maxRate && (
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Max Rate
+                </span>
+                <div className="text-sm font-bold text-orange-600">
+                  {intent.maxRate}%
+                </div>
+              </div>
+            )}
+            
+            {intent.esgPriority && (
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  ESG Priority
+                </span>
+                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${getESGPriorityColor(intent.esgPriority)}`}>
+                  <span>{getESGPriorityIcon(intent.esgPriority)}</span>
+                  {intent.esgPriority}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         
         <div className="space-y-1">
           <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
@@ -103,12 +171,29 @@ const IntentCard = ({
           </p>
         </div>
         
-        {hasOngoingDeals && (
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-warning-100 text-warning-800 rounded-full text-xs font-semibold">
-            <span>🤝</span>
-            Has Active Negotiations
-          </div>
-        )}
+        {/* Status indicators */}
+        <div className="flex flex-wrap gap-2">
+          {hasOngoingDeals && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-warning-100 text-warning-800 rounded-full text-xs font-semibold">
+              <span>🤝</span>
+              Has Active Negotiations
+            </div>
+          )}
+          
+          {isWFAPCompliant() && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+              <span>✓</span>
+              Digitally Signed
+            </div>
+          )}
+          
+          {intent.senderType && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+              <span>🏢</span>
+              {intent.senderType}
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Card Actions */}

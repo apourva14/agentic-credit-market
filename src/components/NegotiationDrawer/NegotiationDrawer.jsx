@@ -9,8 +9,12 @@ import {
   generateOfferLLM, 
   generateCounterOfferLLM, 
   evaluateOfferLLM,
-  generateConversationSummary
+  generateConversationSummary,
+  generateWFAPOfferLLM,
+  evaluateAllOffersWFAP
 } from '../../services/llmService'
+import { MESSAGE_TYPES } from '../../schemas/wfapSchemas'
+import WFAPAuditLog from '../WFAPAuditLog/WFAPAuditLog'
 import {
   getChatSession,
   addMessageToSession,
@@ -38,6 +42,9 @@ const NegotiationDrawer = ({
   const [dealId, setDealId] = useState(null)
   const [conversationSummary, setConversationSummary] = useState(null)
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
+  const [wfapMessages, setWfapMessages] = useState([])
+  const [showWfapAudit, setShowWfapAudit] = useState(false)
+  const [wfapCompliance, setWfapCompliance] = useState(false)
 
   const isClosedDeal = deal && deal.hasOwnProperty('winningBank')
 
@@ -70,10 +77,38 @@ const NegotiationDrawer = ({
     }
   }, [isOpen, deal, intent, isClosedDeal])
 
+  // Track WFAP messages and compliance
+  useEffect(() => {
+    if (chatSession) {
+      const wfapMsgs = extractWFAPMessages(chatSession.messages)
+      setWfapMessages(wfapMsgs)
+      setWfapCompliance(checkWFAPCompliance())
+    }
+  }, [chatSession, intent])
+
   // Get configurations
   const bankConfig = bankConfigs[deal?.bankName] || {}
   const companyConfig = companyConfigs[intent?.companyName] || 
     (intent ? generateCompanyConfig(intent.companyName, intent) : {})
+
+  // Check WFAP compliance
+  const checkWFAPCompliance = () => {
+    if (!intent) return false
+    return intent.messageType === MESSAGE_TYPES.INTENT && 
+           intent.version === "WFAP/1.0" && 
+           intent.signature && 
+           intent.signatureCertId
+  }
+
+  // Extract WFAP messages from chat session
+  const extractWFAPMessages = (messages) => {
+    return messages.filter(msg => 
+      msg.wfapMessage || 
+      msg.type === 'wfap_intent' || 
+      msg.type === 'wfap_offer' || 
+      msg.type === 'wfap_acceptance'
+    ).map(msg => msg.wfapMessage || msg)
+  }
 
   const formatTimestamp = (timestamp) => {
     return format(new Date(timestamp), 'HH:mm')
@@ -501,6 +536,12 @@ End of Audit Log
                 <div>Intent #{deal?.intentId} - {intent?.companyName}</div>
                 <div>Bank: {deal?.bankName}</div>
                 <div>Amount: ${intent?.amount?.toLocaleString()}</div>
+                {wfapCompliance && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-white/20 px-2 py-1 rounded-full">🔒 WFAP 1.0</span>
+                    <span className="text-xs bg-white/20 px-2 py-1 rounded-full">✓ Digitally Signed</span>
+                  </div>
+                )}
                 {isClosedDeal && <div className="text-xs mt-2 opacity-80">✅ Deal Completed</div>}
               </div>
             </div>
@@ -616,6 +657,43 @@ End of Audit Log
                 ✕
               </button>
             </div>
+          </div>
+        )}
+
+        {/* WFAP Audit Log Section */}
+        {wfapCompliance && wfapMessages.length > 0 && (
+          <div className="p-6 border-t border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">WFAP Protocol Audit</h3>
+              <button
+                onClick={() => setShowWfapAudit(!showWfapAudit)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {showWfapAudit ? 'Hide Details' : 'Show Details'}
+              </button>
+            </div>
+            
+            {showWfapAudit ? (
+              <WFAPAuditLog 
+                messages={wfapMessages}
+                onMessageClick={(message) => console.log('WFAP message clicked:', message)}
+                showFilters={false}
+              />
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600">🔒</span>
+                    <span className="text-sm font-medium text-blue-800">
+                      {wfapMessages.length} WFAP messages processed
+                    </span>
+                  </div>
+                  <div className="text-xs text-blue-600">
+                    {wfapMessages.filter(msg => msg.verification?.isValid).length} verified
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -10,12 +10,23 @@ export const sampleData = {
       status: "open",
       timestamp: "2025-09-20T01:30:00Z",
       
+      // WFAP-compliant fields
+      messageId: "req-2025-0001",
+      messageType: "Intent",
+      version: "WFAP/1.0",
+      senderId: "TECHSTART_SOLUTIONS",
+      senderType: "Organization",
+      productType: "BusinessLineOfCredit",
+      currency: "USD",
+      term: 12,
+      maxRate: 8.5,
+      esgPriority: "Medium",
+      
       // Full intent schema
       intent_id: "INTENT_1001",
       customer_id: "TechStart Solutions",
       product_type: "business_line_of_credit",
       requested_amount: 500000,
-      currency: "USD",
       desired_term: 12,
       
       // Customer profile
@@ -31,6 +42,14 @@ export const sampleData = {
         exclude_high_carbon: false,
         preferred_green_certification: "None"
       },
+      
+      // WFAP Security fields (mock)
+      credentials: {
+        certificate: "-----BEGIN CERTIFICATE-----\nMOCK_CERT_TECHSTART_SOLUTIONS\n-----END CERTIFICATE-----",
+        certificateId: "TECHSTART_SOLUTIONS_CERT_1734567890"
+      },
+      signature: "MOCK_SIGNATURE_TECHSTART_SOLUTIONS_1734567890",
+      signatureCertId: "TechStartSolutionsCert#001",
       
       // Additional fields for internal use
       industry: "Technology",
@@ -50,12 +69,23 @@ export const sampleData = {
       status: "open",
       timestamp: "2025-09-20T01:15:00Z",
       
+      // WFAP-compliant fields
+      messageId: "req-2025-0002",
+      messageType: "Intent",
+      version: "WFAP/1.0",
+      senderId: "GREEN_ENERGY_CORP",
+      senderType: "Organization",
+      productType: "BusinessLineOfCredit",
+      currency: "USD",
+      term: 24,
+      maxRate: 7.0,
+      esgPriority: "High",
+      
       // Full intent schema
       intent_id: "INTENT_1002",
       customer_id: "Green Energy Corp",
       product_type: "business_line_of_credit",
       requested_amount: 2000000,
-      currency: "USD",
       desired_term: 24,
       
       // Customer profile
@@ -71,6 +101,14 @@ export const sampleData = {
         exclude_high_carbon: true,
         preferred_green_certification: "GreenLoanPrinciples"
       },
+      
+      // WFAP Security fields (mock)
+      credentials: {
+        certificate: "-----BEGIN CERTIFICATE-----\nMOCK_CERT_GREEN_ENERGY_CORP\n-----END CERTIFICATE-----",
+        certificateId: "GREEN_ENERGY_CORP_CERT_1734567891"
+      },
+      signature: "MOCK_SIGNATURE_GREEN_ENERGY_CORP_1734567891",
+      signatureCertId: "GreenEnergyCorpCert#002",
       
       // Additional fields for internal use
       industry: "Renewable Energy",
@@ -90,12 +128,23 @@ export const sampleData = {
       status: "open",
       timestamp: "2025-09-20T02:00:00Z",
       
+      // WFAP-compliant fields
+      messageId: "req-2025-0003",
+      messageType: "Intent",
+      version: "WFAP/1.0",
+      senderId: "HEALTHTECH_INNOVATIONS",
+      senderType: "Organization",
+      productType: "BusinessLineOfCredit",
+      currency: "USD",
+      term: 18,
+      maxRate: 7.5,
+      esgPriority: "Medium",
+      
       // Full intent schema
       intent_id: "INTENT_1003",
       customer_id: "HealthTech Innovations",
       product_type: "business_line_of_credit",
       requested_amount: 750000,
-      currency: "USD",
       desired_term: 18,
       
       // Customer profile
@@ -111,6 +160,14 @@ export const sampleData = {
         exclude_high_carbon: true,
         preferred_green_certification: "SustainabilityLinkedLoan"
       },
+      
+      // WFAP Security fields (mock)
+      credentials: {
+        certificate: "-----BEGIN CERTIFICATE-----\nMOCK_CERT_HEALTHTECH_INNOVATIONS\n-----END CERTIFICATE-----",
+        certificateId: "HEALTHTECH_INNOVATIONS_CERT_1734567892"
+      },
+      signature: "MOCK_SIGNATURE_HEALTHTECH_INNOVATIONS_1734567892",
+      signatureCertId: "HealthTechInnovationsCert#003",
       
       // Additional fields for internal use
       industry: "Healthcare",
