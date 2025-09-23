@@ -10,10 +10,10 @@ import { companyConfigs, generateCompanyConfig } from './data/companyConfigs'
 import { rolePermissions } from './utils/rolePermissions'
 import { 
   verifyIdentity, 
-  generateOfferLLM, 
-  evaluateAllOffersLLM,
-  evaluateOfferLLM,
-  generateCounterOfferLLM 
+  generateOffer, 
+  evaluateAllOffers,
+  evaluateOffer,
+  generateCounterOffer 
 } from './services/llmService'
 import { 
   addMessageToSession, 
@@ -299,7 +299,7 @@ function App() {
         companyName: "TechStart Solutions",
         amount: 1200000,
         duration: 15,
-        purpose: "Cloud infrastructure expansion and AI development platform",
+        purpose: "Cloud infrastructure expansion and development platform",
         industry: "Technology",
         creditScore: 720,
         esgProfile: "Standard",
@@ -441,7 +441,7 @@ function App() {
         
         addActivity(`📊 ${deal.bankName} generating offer for ${deal.companyName}'s Intent #${deal.intentId}`, 'info')
         
-        const offer = await generateOfferLLM(intent, bankConfig, deal.bankName)
+        const offer = await generateOffer(intent, bankConfig, deal.bankName)
         const dealId = generateDealId(deal.intentId, deal.bankName)
         
         addMessageToSession(dealId, {
@@ -494,7 +494,7 @@ function App() {
           const bankConfig = bankConfigs[deal.bankName]
           if (bankConfig) {
             try {
-              const offer = await generateOfferLLM(intent, bankConfig, deal.bankName)
+              const offer = await generateOffer(intent, bankConfig, deal.bankName)
               bankOffers.push({
                 bankName: deal.bankName,
                 content: offer.content,
@@ -509,7 +509,7 @@ function App() {
         if (bankOffers.length === 0) continue
         
         // Company evaluates all offers
-        const evaluation = await evaluateAllOffersLLM(intent, bankOffers, companyConfig)
+        const evaluation = await evaluateAllOffers(intent, bankOffers, companyConfig)
         
         addActivity(`📋 ${intent.companyName} completed evaluation: ${evaluation.decisions.accept ? 'Accepting' : 'Negotiating with'} ${evaluation.decisions.accept || evaluation.decisions.negotiate.join(', ')}`, 'info')
         
@@ -554,7 +554,7 @@ function App() {
                     { sender: intent.companyName, content: "Counter-offer request" }
                   ]
                   
-                  const counterOffer = await generateCounterOfferLLM(conversation, bankConfig, bankToNegotiate, intent)
+                  const counterOffer = await generateCounterOffer(conversation, bankConfig, bankToNegotiate, intent)
                   
                   addMessageToSession(dealId, {
                     sender: bankToNegotiate,

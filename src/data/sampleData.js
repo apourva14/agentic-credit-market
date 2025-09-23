@@ -38,7 +38,12 @@ export const sampleData = {
       esgProfile: "Standard",
       excludeHighCarbon: false,
       greenCertification: "None",
-      annualRevenue: 2500000
+      annualRevenue: 2500000,
+      
+      // New required fields
+      protocol: "WFAP 1.0",
+      signed_key: "Kj8mN2pQ9rS5tU7vW3xY1zA4bC6dE8fG",
+      product: "Commercial Lending"
     },
     {
       // Basic fields for backward compatibility
@@ -78,7 +83,12 @@ export const sampleData = {
       esgProfile: "CarbonNeutralCertified",
       excludeHighCarbon: true,
       greenCertification: "GreenLoanPrinciples",
-      annualRevenue: 15000000
+      annualRevenue: 15000000,
+      
+      // New required fields
+      protocol: "WFAP 1.0",
+      signed_key: "M9nP2qR5sT8uV1wX4yZ7aB0cD3eF6gH",
+      product: "Commercial Lending"
     },
     {
       // Basic fields for backward compatibility
@@ -118,7 +128,12 @@ export const sampleData = {
       esgProfile: "ISO14001Certified",
       excludeHighCarbon: true,
       greenCertification: "SustainabilityLinkedLoan",
-      annualRevenue: 5000000
+      annualRevenue: 5000000,
+      
+      // New required fields
+      protocol: "WFAP 1.0",
+      signed_key: "N0oP3qR6sT9uV2wX5yZ8aB1cD4eF7gH",
+      product: "Commercial Lending"
     }
   ],
   ongoingDeals: [

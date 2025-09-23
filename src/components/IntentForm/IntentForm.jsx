@@ -1,5 +1,15 @@
 import React, { useState } from 'react'
 
+// Generate random 32-character signed key
+const generateSignedKey = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
 const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
   const [formData, setFormData] = useState({
     // Basic intent fields
@@ -118,7 +128,12 @@ const IntentForm = ({ onCreateIntent, currentRole, selectedCompany }) => {
         esgProfile: formData.esgProfile || 'Standard',
         excludeHighCarbon: formData.excludeHighCarbon,
         greenCertification: formData.preferredGreenCertification || 'None',
-        annualRevenue: formData.annualRevenue ? parseInt(formData.annualRevenue) : 1000000
+        annualRevenue: formData.annualRevenue ? parseInt(formData.annualRevenue) : 1000000,
+        
+        // New required fields
+        protocol: "WFAP 1.0",
+        signed_key: generateSignedKey(),
+        product: "Commercial Lending"
       }
       
       await onCreateIntent(intent)

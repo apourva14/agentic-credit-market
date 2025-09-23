@@ -1,27 +1,27 @@
-# Agentic Credit Market with Negotiation Chat
+# Credit Market with Negotiation Chat
 
-A modern React-based web application for facilitating credit line requests between companies and banks using an agentic marketplace approach with a kanban-style workflow, built with Vite and Tailwind CSS. Now featuring **AI-powered negotiation chat windows** for real-time deal negotiations!
+A modern React-based web application for facilitating credit line requests between companies and banks using a marketplace approach with a kanban-style workflow, built with Vite and Tailwind CSS. Now featuring **intelligent negotiation chat windows** for real-time deal negotiations!
 
-## 🚀 New Features: AI-Powered Negotiations
+## 🚀 New Features: Intelligent Negotiations
 
 ### 💬 **Negotiation Chat Window**
 - **Side Panel Interface**: Click any ongoing deal card to open a 50% width sliding drawer
-- **Real-time LLM Integration**: Powered by OpenRouter API with gpt-oss-20b:free
+- **Real-time Integration**: Powered by OpenRouter API
 - **Role-based Workflows**: Different conversation flows for Banks and Companies
 - **Chat History Persistence**: All conversations stored in localStorage
 - **Multi-turn Negotiations**: Full support for offers, counter-offers, and acceptances
 
 ### 🏦 **Bank Negotiation Flow**
 1. **Identity Verification**: Authenticate company identity before proceeding
-2. **Generate Offers**: AI creates tailored loan offers based on bank configuration
-3. **Counter-offers**: Respond to company negotiations with AI-generated responses
+2. **Generate Offers**: Creates tailored loan offers based on bank configuration
+3. **Counter-offers**: Respond to company negotiations with intelligent responses
 4. **Deal Management**: Accept final terms or cancel negotiations
 
 ### 🏢 **Company Negotiation Flow**
 1. **View Bank Offers**: Review detailed loan terms and conditions
-2. **AI Evaluation**: Automatically evaluate offers against company preferences
+2. **Intelligent Evaluation**: Automatically evaluate offers against company preferences
 3. **Smart Negotiations**: Generate counter-offers or accept favorable terms
-4. **Flexible Decision Making**: Manual accept/reject or AI-assisted evaluation
+4. **Flexible Decision Making**: Manual accept/reject or intelligent evaluation
 
 ### 🤖 **Intelligent Configuration System**
 - **Bank Profiles**: Risk tolerance, interest rates, specializations, negotiation styles
@@ -47,14 +47,14 @@ A modern React-based web application for facilitating credit line requests betwe
 - Form validation and error handling
 - Responsive design for desktop and mobile
 - Professional business application styling with smooth animations
-- **NEW**: LLM-powered negotiation conversations
+- **NEW**: Intelligent negotiation conversations
 - **NEW**: Persistent chat history across sessions
 - **NEW**: Identity verification for enhanced security
 
 ### 💼 Business Logic
 - Intent creation with amount, duration, and purpose
 - Bank interest expression creating ongoing negotiations
-- **NEW**: Multi-round AI negotiations with offers and counter-offers
+- **NEW**: Multi-round intelligent negotiations with offers and counter-offers
 - **NEW**: Intelligent acceptance/rejection based on company preferences
 - Automatic cleanup when deals are closed (removes competing negotiations)
 - Complete audit trail with timestamps
@@ -69,7 +69,7 @@ A modern React-based web application for facilitating credit line requests betwe
 - **Date Handling**: date-fns for timestamp formatting
 - **UUID**: uuid for unique identifier generation
 - **HTTP Client**: axios for LLM API calls
-- **AI Integration**: OpenRouter API with gpt-oss-20b:free model
+- **API Integration**: OpenRouter API for intelligent responses
 - **Storage**: localStorage for chat history persistence
 
 ## Project Structure
@@ -120,7 +120,7 @@ agentic-credit-market/
 
 - Node.js (version 16 or higher)
 - npm (comes with Node.js)
-- **OpenRouter API Key** (for AI negotiations)
+- **OpenRouter API Key** (for intelligent negotiations)
 
 ### Installation
 
@@ -146,7 +146,7 @@ agentic-credit-market/
 
 4. **Get OpenRouter API Key**
    - Go to [OpenRouter.ai](https://openrouter.ai/)
-   - Sign up or log in
+   - Sign up for an account
    - Navigate to the Keys section
    - Create a new API key
    - Copy the key to your `.env` file
@@ -178,7 +178,7 @@ Identity Verification → Generate Offer → Counter-offers → Accept/Cancel
 
 ### 3. **Company Workflow**
 ```
-View Offers → AI Evaluation → Accept/Negotiate → Final Decision
+View Offers → Intelligent Evaluation → Accept/Negotiate → Final Decision
 ```
 
 ### 4. **View Chat History**
@@ -194,7 +194,7 @@ View Offers → AI Evaluation → Accept/Negotiate → Final Decision
    - Select "Company" role from the header
    - Use the form to create new credit intents
    - **NEW**: Click ongoing deal cards to view/participate in negotiations
-   - **NEW**: Accept offers or generate AI counter-offers
+   - **NEW**: Accept offers or generate intelligent counter-offers
    - Close deals by accepting bank offers in chat
 
 2. **Bank Users**  
@@ -203,7 +203,7 @@ View Offers → AI Evaluation → Accept/Negotiate → Final Decision
    - Click "Express Interest" to start negotiations
    - **NEW**: Click ongoing deal cards to open negotiation chat
    - **NEW**: Verify company identity before making offers
-   - **NEW**: Generate AI-powered loan offers and counter-offers
+   - **NEW**: Generate intelligent loan offers and counter-offers
 
 3. **Admin Users**
    - Select "Admin" role for full system access
@@ -224,9 +224,9 @@ View Offers → AI Evaluation → Accept/Negotiate → Final Decision
 
 1. **Company Creates Intent**: Submit credit request with amount, duration, and purpose
 2. **Bank Expresses Interest**: Banks review and express interest in open intents
-3. **🆕 Negotiation Chat Opens**: Click ongoing deal to start AI-powered negotiations
+3. **🆕 Negotiation Chat Opens**: Click ongoing deal to start intelligent negotiations
 4. **🆕 Identity Verification**: Bank verifies company authenticity
-5. **🆕 Offer Exchange**: AI generates offers, counter-offers, and evaluations
+5. **🆕 Offer Exchange**: Intelligent system generates offers, counter-offers, and evaluations
 6. **🆕 Deal Acceptance**: Company accepts final terms through chat
 7. **Deal Completion**: Automatic cleanup and chat history preservation
 
@@ -248,9 +248,9 @@ Companies have profiles that include:
 - Negotiation preferences and priority factors
 - Industry context and risk profiles
 
-### LLM Integration
+### API Integration
 The system uses OpenRouter API with:
-- gpt-oss-20b:free model for high-quality responses
+- High-quality response generation
 - Context-aware prompts based on configurations
 - Multi-turn conversation support
 - Error handling with retry mechanisms
@@ -274,7 +274,7 @@ The system uses OpenRouter API with:
 - Add new roles or modify existing capabilities
 - Customize role-based UI behavior
 
-### LLM Behavior
+### Response Generation
 - Modify prompts in `src/services/llmService.js`
 - Adjust model parameters and response handling
 - Customize evaluation criteria and offer generation
@@ -284,7 +284,7 @@ The system uses OpenRouter API with:
 
 ### Common Issues
 
-1. **LLM API Errors**
+1. **API Errors**
    - Verify your OpenRouter API key is correct
    - Check your account has sufficient credits
    - Ensure environment variable is properly set
@@ -346,7 +346,7 @@ When extending this application:
 4. Test negotiation flows across different roles
 5. Follow responsive design patterns
 6. Update configuration files when adding new banks/companies
-7. Test LLM integration thoroughly
+7. Test API integration thoroughly
 8. Update this README with new features or setup changes
 
 ## License
@@ -363,8 +363,8 @@ VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 
 ## API Costs
 
-The application uses OpenRouter API which has usage-based pricing. The `gpt-oss-20b:free` model is cost-effective for this use case. Monitor your usage through the OpenRouter dashboard.
+The application uses OpenRouter API which has usage-based pricing. Monitor your usage through the OpenRouter dashboard.
 
 ---
 
-For questions or issues, please refer to the code comments and component documentation within the source files. The negotiation feature adds significant value to the credit marketplace by enabling realistic, AI-powered deal-making experiences.
+For questions or issues, please refer to the code comments and component documentation within the source files. The negotiation feature adds significant value to the credit marketplace by enabling realistic, intelligent deal-making experiences.

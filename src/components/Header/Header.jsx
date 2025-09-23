@@ -36,7 +36,7 @@ const Header = ({
           {/* Title and Role Indicator */}
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-bold text-gray-900">
-              Agentic Credit Market
+              Credit Market
             </h1>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-600">Current Role:</span>

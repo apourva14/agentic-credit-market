@@ -10,6 +10,16 @@ export const verifyIdentity = async (companyName, intent) => {
   return Math.random() > 0.2
 }
 
+// Generate random 32-character signed key
+const generateSignedKey = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
 // Calculate estimated project emissions based on purpose and amount
 const calculateProjectEmissions = (purpose, amount) => {
   const purposeLower = purpose.toLowerCase()
@@ -31,7 +41,7 @@ const calculateProjectEmissions = (purpose, amount) => {
   return Math.round((amount / 100000) * baseEmissions)
 }
 
-// Parse JSON offer from LLM response
+// Parse JSON offer from response
 const parseOfferFromResponse = (responseContent) => {
   try {
     // Try to extract JSON from the response
@@ -60,8 +70,8 @@ const parseOfferFromResponse = (responseContent) => {
   }
 }
 
-// Generate initial bank offer using LLM
-export const generateOfferLLM = async (intent, bankConfig, bankName) => {
+// Generate initial bank offer
+export const generateOffer = async (intent, bankConfig, bankName) => {
   try {
     // Check if API key is available
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
@@ -71,7 +81,7 @@ export const generateOfferLLM = async (intent, bankConfig, bankName) => {
     // Calculate estimated project emissions based on purpose and amount
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
 
-    const systemPrompt = `You are an AI assistant operating as a loan officer for ${bankName}. You will receive a loan request and must respond with a JSON offer and a brief explanation. Only output valid JSON and concise reasoning. Adhere to the bank's policies provided.
+    const systemPrompt = `You are a loan officer for ${bankName}. You will receive a loan request and must respond with a JSON offer and a brief explanation. Only output valid JSON and concise reasoning. Adhere to the bank's policies provided.
 
 Bank Configuration:
 - Risk Appetite: ${bankConfig.risk_appetite}
@@ -136,7 +146,10 @@ Required JSON Schema (exactly as specified):
   "collateral_required": "[string description]",
   "estimated_project_emissions": ${estimatedEmissions},
   "esg_rating": [number 1-100],
-  "offer_explanation": "[brief explanation]"
+  "offer_explanation": "[brief explanation]",
+  "protocol": "WFAP 1.0",
+  "signed_key": "${generateSignedKey()}",
+  "product": "Commercial Lending"
 }
 
 After the JSON, provide a detailed explanation paragraph that reflects ${bankName}'s config (risk ${bankConfig.risk_appetite}: appropriate terms, and since esg_focus is ${bankConfig.esg_focus}, note any ESG-related adjustments).`
@@ -169,7 +182,7 @@ After the JSON, provide a detailed explanation paragraph that reflects ${bankNam
 }
 
 // Generate bank counter-offer using chat history
-export const generateCounterOfferLLM = async (conversation, bankConfig, bankName, intent) => {
+export const generateCounterOffer = async (conversation, bankConfig, bankName, intent) => {
   try {
     // Check if API key is available
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
@@ -182,7 +195,7 @@ export const generateCounterOfferLLM = async (conversation, bankConfig, bankName
 
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
 
-    const systemPrompt = `You are an AI assistant operating as a loan officer for ${bankName}. Based on the ongoing negotiation and your bank's configuration, generate a counter-offer response in JSON format. Consider the company's previous response and adjust terms accordingly while staying within your bank's parameters.
+    const systemPrompt = `You are a loan officer for ${bankName}. Based on the ongoing negotiation and your bank's configuration, generate a counter-offer response in JSON format. Consider the company's previous response and adjust terms accordingly while staying within your bank's parameters.
 
 Bank Configuration:
 - Risk Appetite: ${bankConfig.risk_appetite}
@@ -225,7 +238,10 @@ Required JSON Schema (exactly as specified):
   "collateral_required": "[string description]",
   "estimated_project_emissions": ${estimatedEmissions},
   "esg_rating": [number 1-100],
-  "offer_explanation": "[brief explanation]"
+  "offer_explanation": "[brief explanation]",
+  "protocol": "WFAP 1.0",
+  "signed_key": "${generateSignedKey()}",
+  "product": "Commercial Lending"
 }
 
 After the JSON, provide a detailed explanation paragraph explaining the changes made and reasoning.`
@@ -258,7 +274,7 @@ After the JSON, provide a detailed explanation paragraph explaining the changes 
 }
 
 // Evaluate offer and generate company response
-export const evaluateOfferLLM = async (intent, bankOffer, companyConfig, conversation = []) => {
+export const evaluateOffer = async (intent, bankOffer, companyConfig, conversation = []) => {
   try {
     // Check if API key is available
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
@@ -271,7 +287,11 @@ export const evaluateOfferLLM = async (intent, bankOffer, companyConfig, convers
 
     const estimatedEmissions = calculateProjectEmissions(intent.purpose, intent.amount)
 
-    const systemPrompt = `You are an AI agent representing ${intent.companyName}. Your goal is to choose the best financing offer, considering both financial terms and the customer's ESG guidelines. You will be given offers from banks and the original request. If one offer meets the requirements and is favorable, you will accept it on behalf of the customer (and explain why). If none are satisfactory, you will propose up to two counter-offer intents (negotiate) for the top competing offers, with reasoning.
+    // Special handling for Retail Dynamics negotiation pattern
+    const isRetailDynamics = intent.companyName === "Retail Dynamics"
+    const offerCount = conversation.filter(msg => msg.type === 'offer').length
+    
+    let systemPrompt = `You are representing ${intent.companyName}. Your goal is to choose the best financing offer, considering both financial terms and the customer's ESG guidelines. You will be given offers from banks and the original request. If one offer meets the requirements and is favorable, you will accept it on behalf of the customer (and explain why). If none are satisfactory, you will propose up to two counter-offer intents (negotiate) for the top competing offers, with reasoning.
 
 Company Configuration:
 - Max Acceptable Rate: ${companyConfig.max_acceptable_rate}%
@@ -292,7 +312,21 @@ Decision Guidelines:
 - Among acceptable offers, consider ESG impact: prefer offers with lower carbon emissions and higher ESG ratings
 - Use ESG-adjusted scoring: Effective_Score = interest_rate + (estimated_project_emissions / 100)
 - If esg_priority is "High" and estimated_project_emissions > ${companyConfig.esg_max_emissions}, reject the offer
-- Consider decision_strategy: "ESG_Focused" prioritizes ESG, "Cost_Focused" prioritizes cost, "Balanced" considers both
+- Consider decision_strategy: "ESG_Focused" prioritizes ESG, "Cost_Focused" prioritizes cost, "Balanced" considers both`
+
+    // Add special instructions for Retail Dynamics
+    if (isRetailDynamics && companyConfig.negotiation_pattern === "negotiate_then_accept") {
+      systemPrompt += `
+
+SPECIAL NEGOTIATION PATTERN FOR RETAIL DYNAMICS:
+- This is offer #${offerCount + 1} from the bank
+- ALWAYS negotiate on the FIRST offer (counter-offer)
+- ALWAYS accept on the SECOND offer (if terms are reasonable)
+- Current offer count: ${offerCount}
+- Action required: ${offerCount === 0 ? 'NEGOTIATE (counter-offer)' : 'ACCEPT (if reasonable terms)'}`
+    }
+
+    systemPrompt += `
 
 Output format: Either accept the best offer with reasoning, or generate counter-offer intents for negotiation.`
 
@@ -327,7 +361,29 @@ Task: Evaluate the above offer against the customer's requirements:
 2. Among acceptable offers, consider ESG impact using Effective_Score = interest_rate + (estimated_project_emissions / 100)
 3. If esg_priority is "High" and estimated_project_emissions > ${companyConfig.esg_max_emissions}, reject the offer
 
-If the offer is acceptable, respond with acceptance and reasoning. If not, provide a professional counter-offer that addresses your concerns while being reasonable.`
+IMPORTANT: Format your response as follows:
+1. First, provide the JSON decision (exactly as specified below)
+2. Then, provide a detailed explanation paragraph
+
+Required JSON Schema (exactly as specified):
+{
+  "decision": "ACCEPT" or "REJECT",
+  "reasoning": "Brief explanation of the decision",
+  "counter_offer_terms": {
+    "requested_amount": [number or null],
+    "desired_term": [number or null],
+    "max_interest_rate": [number or null],
+    "additional_requirements": "[string or null]"
+  }
+}
+
+After the JSON, provide a detailed explanation paragraph that reflects the company's decision strategy and ESG priorities.
+
+DECISION CRITERIA:
+- ACCEPT if the offer meets or exceeds the company's requirements
+- REJECT if the offer does not meet the company's minimum requirements
+- Always provide clear reasoning for your decision
+- If REJECT, suggest specific counter-offer terms that would be acceptable`
 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -348,10 +404,43 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
 
     const responseContent = response.data.choices[0].message.content
     
-    // Determine if this is an acceptance or counter-offer
-    const isAcceptance = responseContent.toLowerCase().includes('accept') || 
-                        responseContent.toLowerCase().includes('agree') ||
-                        responseContent.toLowerCase().includes('deal')
+    // Try to parse the JSON decision from the response
+    const jsonMatch = responseContent.match(/\{[\s\S]*\}/)
+    let decision = null
+    let isAcceptance = false
+    
+    if (jsonMatch) {
+      try {
+        const decisionData = JSON.parse(jsonMatch[0])
+        decision = decisionData.decision
+        
+        // Special handling for Retail Dynamics negotiation pattern
+        if (isRetailDynamics && companyConfig.negotiation_pattern === "negotiate_then_accept") {
+          if (offerCount === 0) {
+            // First offer - always negotiate
+            decision = 'REJECT'
+            isAcceptance = false
+          } else {
+            // Second offer - accept if reasonable
+            isAcceptance = decision === 'ACCEPT'
+          }
+        } else {
+          // Normal decision logic for other companies
+          isAcceptance = decision === 'ACCEPT'
+        }
+      } catch (error) {
+        console.error('Error parsing decision JSON:', error)
+        // Fallback to old logic if JSON parsing fails
+        isAcceptance = responseContent.toLowerCase().includes('accept') || 
+                      responseContent.toLowerCase().includes('agree') ||
+                      responseContent.toLowerCase().includes('deal')
+      }
+    } else {
+      // Fallback to old logic if no JSON found
+      isAcceptance = responseContent.toLowerCase().includes('accept') || 
+                    responseContent.toLowerCase().includes('agree') ||
+                    responseContent.toLowerCase().includes('deal')
+    }
     
     // Try to parse any JSON in the response for structured counter-offers
     const parsedResponse = parseOfferFromResponse(responseContent)
@@ -359,6 +448,7 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
     return {
       content: responseContent,
       isAcceptance,
+      decision,
       offer: parsedResponse.offer
     }
   } catch (error) {
@@ -369,7 +459,7 @@ If the offer is acceptable, respond with acceptance and reasoning. If not, provi
 }
 
 // New function for market simulation: Company evaluates all bank offers and makes decisions
-export const evaluateAllOffersLLM = async (intent, bankOffers, companyConfig) => {
+export const evaluateAllOffers = async (intent, bankOffers, companyConfig) => {
   try {
     // Check if API key is available
     if (!import.meta.env.VITE_OPENROUTER_API_KEY) {
@@ -384,7 +474,7 @@ export const evaluateAllOffersLLM = async (intent, bankOffers, companyConfig) =>
 ${offer.content}`
     ).join('\n\n')
 
-    const systemPrompt = `You are an AI agent representing ${intent.companyName}. You have received multiple loan offers from different banks and need to make strategic decisions about which banks to negotiate with and which to reject or accept.
+    const systemPrompt = `You are representing ${intent.companyName}. You have received multiple loan offers from different banks and need to make strategic decisions about which banks to negotiate with and which to reject or accept.
 
 Company Configuration:
 - Max Acceptable Rate: ${companyConfig.max_acceptable_rate}%
@@ -502,7 +592,7 @@ export const generateConversationSummary = async (conversation, intent, deal) =>
       .map(msg => `${msg.sender}: ${msg.content}`)
       .join('\n')
 
-    const systemPrompt = `You are an AI assistant tasked with creating a comprehensive audit summary of a completed loan negotiation between ${intent.companyName} and ${deal.bankName}. Create a professional summary that includes:
+    const systemPrompt = `Create a comprehensive audit summary of a completed loan negotiation between ${intent.companyName} and ${deal.bankName}. Create a professional summary that includes:
 
 1. Final agreed terms (extract from the conversation)
 2. Key negotiation points and concessions made

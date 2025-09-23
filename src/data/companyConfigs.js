@@ -138,9 +138,10 @@ export const companyConfigs = {
     esg_max_emissions: 600, // tCO2/year
     min_esg_rating: 55,
     
-    // Decision Strategy
+    // Decision Strategy - Special pattern: Always negotiate first, accept second
     decision_strategy: "Cost_Focused",
-    negotiation_strategy: "CounterOfferTop2",
+    negotiation_strategy: "AlwaysNegotiateFirst",
+    negotiation_pattern: "negotiate_then_accept",
     
     // Other Preferences
     preferred_bank_features: ["QuickApproval", "SeasonalFlexibility"],

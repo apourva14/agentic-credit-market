@@ -6,11 +6,21 @@ import { bankConfigs } from '../../data/bankConfigs'
 import { companyConfigs, generateCompanyConfig } from '../../data/companyConfigs'
 import { 
   verifyIdentity, 
-  generateOfferLLM, 
-  generateCounterOfferLLM, 
-  evaluateOfferLLM,
+  generateOffer, 
+  generateCounterOffer, 
+  evaluateOffer,
   generateConversationSummary
 } from '../../services/llmService'
+
+// Generate random 32-character signed key
+const generateSignedKey = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
 import {
   getChatSession,
   addMessageToSession,
@@ -52,11 +62,13 @@ const NegotiationDrawer = ({
       
       // Add initial system message if this is a new session
       if (session.messages.length === 0 && !isClosedDeal) {
+        // Add the initial system message about identity verification
         addMessageToSession(id, {
           sender: 'system',
-          content: `Negotiation started for ${intent.companyName}'s credit request of $${intent.amount.toLocaleString()} for ${intent.duration} months.`,
+          content: `Negotiation started for ${intent.companyName}'s credit request of $${intent.amount.toLocaleString()} for ${intent.duration} months. Please verify the company's identity before proceeding with the negotiation.`,
           type: 'system'
         })
+        
         setChatSession(getChatSession(id))
       }
 
@@ -102,7 +114,7 @@ const NegotiationDrawer = ({
     const filename = `audit_log_intent_${deal.intentId}_${timestamp}.txt`
     
     const auditContent = `
-AGENTIC CREDIT MARKET - AUDIT LOG
+CREDIT MARKET - AUDIT LOG
 =================================
 
 Deal Information:
@@ -140,6 +152,35 @@ End of Audit Log
           content: `✅ Identity verification successful for ${intent.companyName}. ${deal.bankName} can now proceed with the loan offer.`,
           type: 'verification_success'
         })
+        
+        // Add the initial intent details after successful verification
+        addMessageToSession(dealId, {
+          sender: 'system',
+          content: JSON.stringify({
+            intent_id: intent.intent_id || `INTENT_${intent.id}`,
+            customer_id: intent.companyName,
+            product_type: intent.product_type || 'business_line_of_credit',
+            requested_amount: intent.amount,
+            currency: intent.currency || 'USD',
+            purpose: intent.purpose,
+            desired_term: intent.duration,
+            customer_profile: {
+              industry: intent.industry || 'General Business',
+              annual_revenue: intent.annualRevenue || 1000000,
+              credit_score: intent.creditScore || 700,
+              esg_profile: intent.esgProfile || 'Standard'
+            },
+            esg_preferences: {
+              exclude_high_carbon: intent.excludeHighCarbon || false,
+              preferred_green_certification: intent.greenCertification || 'None'
+            },
+            protocol: "WFAP 1.0",
+            signed_key: generateSignedKey(),
+            product: "Commercial Lending"
+          }, null, 2),
+          type: 'initial_intent'
+        })
+        
         updateSessionStatus(dealId, 'verified')
       } else {
         addMessageToSession(dealId, {
@@ -169,7 +210,7 @@ End of Audit Log
     
     try {
       console.log('Generating offer for:', { intent, bankConfig, bankName: deal.bankName })
-      const response = await generateOfferLLM(intent, bankConfig, deal.bankName)
+      const response = await generateOffer(intent, bankConfig, deal.bankName)
       console.log('Offer response:', response)
       
       // Handle both old string format and new object format
@@ -198,7 +239,7 @@ End of Audit Log
     
     try {
       const conversation = chatSession.messages.filter(msg => msg.type !== 'system')
-      const response = await generateCounterOfferLLM(
+      const response = await generateCounterOffer(
         conversation, 
         bankConfig, 
         deal.bankName, 
@@ -238,14 +279,17 @@ End of Audit Log
       }
       
       const conversation = chatSession.messages.filter(msg => msg.type !== 'system')
-      const evaluation = await evaluateOfferLLM(
+      const evaluation = await evaluateOffer(
         intent, 
         lastBankMessage.content, 
         companyConfig, 
         conversation
       )
       
-      if (evaluation.isAcceptance) {
+      // Check the decision from the response
+      const isAcceptance = evaluation.isAcceptance && evaluation.decision === 'ACCEPT'
+      
+      if (isAcceptance) {
         addMessageToSession(dealId, {
           sender: intent.companyName,
           content: evaluation.content,
@@ -259,11 +303,33 @@ End of Audit Log
           onClose()
         }, 1000)
       } else {
+        // Company is not satisfied and generating a counter-offer
+        // Create a new negotiating intent JSON based on the counter-offer
+        const newNegotiatingIntent = createNewNegotiatingIntent(intent, evaluation.content)
+        
+        // Add the counter-offer message with the new intent
         addMessageToSession(dealId, {
           sender: intent.companyName,
           content: evaluation.content,
           type: 'counter_offer'
         })
+        
+        // Add the new negotiating intent as a separate message
+        addMessageToSession(dealId, {
+          sender: intent.companyName,
+          content: JSON.stringify(newNegotiatingIntent, null, 2),
+          type: 'new_negotiating_intent'
+        })
+        
+        // Add a system message about the new negotiating intent
+        addMessageToSession(dealId, {
+          sender: 'system',
+          content: `🔄 New negotiating intent created based on counter-offer. ${deal.bankName} can now generate a new competing offer.`,
+          type: 'system'
+        })
+        
+        // Keep the session status as 'in_progress' to allow continued negotiation
+        updateSessionStatus(dealId, 'in_progress')
       }
       
       setChatSession(getChatSession(dealId))
@@ -272,6 +338,65 @@ End of Audit Log
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Helper function to create a new negotiating intent from counter-offer
+  const createNewNegotiatingIntent = (originalIntent, counterOfferContent) => {
+    // Extract any modified terms from the counter-offer if possible
+    // For now, we'll create a new intent with the same basic structure
+    // but with a new ID and timestamp
+    const newIntent = {
+      // Basic fields for backward compatibility
+      id: `INTENT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      companyName: originalIntent.companyName,
+      amount: originalIntent.amount,
+      duration: originalIntent.duration,
+      purpose: originalIntent.purpose,
+      status: "open",
+      timestamp: new Date().toISOString(),
+      
+      // Full intent schema
+      intent_id: `INTENT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      customer_id: originalIntent.companyName,
+      product_type: originalIntent.product_type || 'business_line_of_credit',
+      requested_amount: originalIntent.amount,
+      currency: originalIntent.currency || 'USD',
+      desired_term: originalIntent.duration,
+      
+      // Customer profile (copy from original)
+      customer_profile: originalIntent.customer_profile || {
+        industry: originalIntent.industry || 'General Business',
+        annual_revenue: originalIntent.annualRevenue || 1000000,
+        credit_score: originalIntent.creditScore || 700,
+        esg_profile: originalIntent.esgProfile || 'Standard'
+      },
+      
+      // ESG preferences (copy from original)
+      esg_preferences: originalIntent.esg_preferences || {
+        exclude_high_carbon: originalIntent.excludeHighCarbon || false,
+        preferred_green_certification: originalIntent.greenCertification || 'None'
+      },
+      
+      // Additional fields for internal use
+      industry: originalIntent.industry || 'General Business',
+      creditScore: originalIntent.creditScore || 700,
+      esgProfile: originalIntent.esgProfile || 'Standard',
+      excludeHighCarbon: originalIntent.excludeHighCarbon || false,
+      greenCertification: originalIntent.greenCertification || 'None',
+      annualRevenue: originalIntent.annualRevenue || 1000000,
+      
+       // Mark as a counter-offer intent
+       isCounterOffer: true,
+       originalIntentId: originalIntent.id,
+       counterOfferReason: counterOfferContent,
+       
+       // Add new required fields
+       protocol: "WFAP 1.0",
+       signed_key: generateSignedKey(),
+       product: "Commercial Lending"
+     }
+     
+     return newIntent
   }
 
   const handleAcceptOffer = () => {
@@ -321,9 +446,42 @@ End of Audit Log
       )
     }
 
-    // Check if message contains JSON offer
+    if (message.type === 'verification_success') {
+      return (
+        <div key={message.id} className="flex justify-center mb-4">
+          <div className="bg-green-100 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm max-w-md text-center">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-green-600">✅</span>
+              {message.content}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (message.type === 'verification_failed') {
+      return (
+        <div key={message.id} className="flex justify-center mb-4">
+          <div className="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm max-w-md text-center">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-red-600">❌</span>
+              {message.content}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Check if message contains JSON content (offers, counter-offers, or any structured data)
     const jsonMatch = message.content.match(/\{[\s\S]*\}/)
-    const hasJsonOffer = jsonMatch && (message.type === 'offer' || message.type === 'counter_offer')
+    const hasJsonContent = jsonMatch && (
+      message.type === 'offer' || 
+      message.type === 'counter_offer' || 
+      message.type === 'acceptance' ||
+      message.type === 'new_negotiating_intent' ||
+      message.type === 'initial_intent' ||
+      (message.sender === intent?.companyName && jsonMatch) // Company responses with JSON
+    )
     
     return (
       <div key={message.id} className={`flex mb-4 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
@@ -339,14 +497,26 @@ End of Audit Log
             {message.type === 'offer' && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">OFFER</span>}
             {message.type === 'counter_offer' && <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded">COUNTER</span>}
             {message.type === 'acceptance' && <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">ACCEPTED</span>}
+            {message.type === 'new_negotiating_intent' && <span className="text-xs bg-indigo-500 text-white px-2 py-1 rounded">NEW INTENT</span>}
+            {message.type === 'initial_intent' && <span className="text-xs bg-gray-500 text-white px-2 py-1 rounded">INTENT</span>}
+            {hasJsonContent && message.sender === intent?.companyName && !message.type && (
+              <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded">RESPONSE</span>
+            )}
           </div>
           
-          {hasJsonOffer ? (
+          {hasJsonContent ? (
             <div className="space-y-3">
-              {/* JSON Offer Section */}
+              {/* JSON Content Section */}
               <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-xs overflow-x-auto">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-green-400 font-semibold">📋 Offer Details</span>
+                  <span className="text-green-400 font-semibold">
+                    📋 {message.type === 'offer' ? 'Offer Details' : 
+                         message.type === 'counter_offer' ? 'Counter-Offer Details' :
+                         message.type === 'acceptance' ? 'Acceptance Details' :
+                         message.type === 'new_negotiating_intent' ? 'New Negotiating Intent' :
+                         message.type === 'initial_intent' ? 'Initial Credit Intent' :
+                         'Structured Data'}
+                  </span>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(jsonMatch[0])
@@ -363,7 +533,12 @@ End of Audit Log
               {/* Reasoning Section */}
               {message.content.replace(jsonMatch[0], '').trim() && (
                 <div className="bg-white/10 p-3 rounded-lg">
-                  <div className="text-xs font-semibold mb-2 text-yellow-300">💭 Bank's Reasoning</div>
+                  <div className="text-xs font-semibold mb-2 text-yellow-300">
+                    💭 {message.type === 'initial_intent' ? 'Intent Details' :
+                         message.sender === deal?.bankName ? 'Bank\'s Reasoning' : 
+                         message.sender === intent?.companyName ? 'Company\'s Reasoning' :
+                         'Explanation'}
+                  </div>
                   <div className="text-sm leading-relaxed">
                     {message.content.replace(jsonMatch[0], '').trim()}
                   </div>
@@ -371,7 +546,40 @@ End of Audit Log
               )}
             </div>
           ) : (
-            <div className="text-sm leading-relaxed">{message.content}</div>
+            <div className="text-sm leading-relaxed">
+              {/* Check if content contains markdown formatting */}
+              {message.content.includes('**') || message.content.includes('*') || message.content.includes('#') || message.content.includes('`') || message.content.includes('- ') || message.content.includes('1. ') ? (
+                <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-code:text-gray-800 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-50 prose-pre:border prose-pre:border-gray-200">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h1: ({children}) => <h1 className="text-lg font-bold text-gray-900 mt-4 mb-3 border-b border-gray-200 pb-2">{children}</h1>,
+                      h2: ({children}) => <h2 className="text-base font-semibold text-gray-900 mt-3 mb-2">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-sm font-semibold text-gray-800 mt-2 mb-1">{children}</h3>,
+                      p: ({children}) => <p className="text-gray-700 leading-relaxed mb-2">{children}</p>,
+                      ul: ({children}) => <ul className="list-disc list-inside space-y-1 mb-3 text-gray-700">{children}</ul>,
+                      ol: ({children}) => <ol className="list-decimal list-inside space-y-1 mb-3 text-gray-700">{children}</ol>,
+                      li: ({children}) => <li className="text-gray-700">{children}</li>,
+                      strong: ({children}) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                      em: ({children}) => <em className="italic text-gray-600">{children}</em>,
+                      code: ({children}) => <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono">{children}</code>,
+                      pre: ({children}) => <pre className="bg-gray-50 border border-gray-200 p-2 rounded-lg overflow-x-auto mb-3 text-xs">{children}</pre>,
+                      blockquote: ({children}) => <blockquote className="border-l-4 border-blue-200 pl-3 italic text-gray-600 my-3">{children}</blockquote>,
+                      table: ({children}) => <div className="overflow-x-auto mb-3"><table className="min-w-full border border-gray-200 rounded-lg text-xs">{children}</table></div>,
+                      thead: ({children}) => <thead className="bg-gray-50">{children}</thead>,
+                      tbody: ({children}) => <tbody className="divide-y divide-gray-200">{children}</tbody>,
+                      tr: ({children}) => <tr className="hover:bg-gray-50">{children}</tr>,
+                      th: ({children}) => <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{children}</th>,
+                      td: ({children}) => <td className="px-2 py-1 text-xs text-gray-700">{children}</td>
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                message.content
+              )}
+            </div>
           )}
           
           <div className={`text-xs mt-2 ${isOwnMessage ? 'text-white/70' : 'text-gray-500'}`}>
@@ -413,6 +621,9 @@ End of Audit Log
         const hasOffers = chatSession.messages.some(msg => 
           msg.sender === deal.bankName && (msg.type === 'offer' || msg.type === 'counter_offer')
         )
+        const hasNewNegotiatingIntent = chatSession.messages.some(msg => 
+          msg.type === 'new_negotiating_intent'
+        )
 
         return (
           <div className="space-y-3">
@@ -421,7 +632,9 @@ End of Audit Log
               disabled={isLoading}
               className="w-full btn btn-success"
             >
-              {isLoading ? 'Generating...' : hasOffers ? '🔁 Provide Counter-Offer' : '💬 Provide Offer'}
+              {isLoading ? 'Generating...' : 
+               hasNewNegotiatingIntent ? '💬 Generate New Offer' :
+               hasOffers ? '🔁 Provide Counter-Offer' : '💬 Provide Offer'}
             </button>
             <button
               onClick={handleCancelDeal}

@@ -1,6 +1,6 @@
 // Chat storage utilities for managing conversation history
-const CHAT_STORAGE_KEY = 'agenticCreditMarket_chatSessions'
-const SUMMARY_STORAGE_KEY = 'agenticCreditMarket_summaries'
+const CHAT_STORAGE_KEY = 'creditMarket_chatSessions'
+const SUMMARY_STORAGE_KEY = 'creditMarket_summaries'
 
 // Get all chat sessions from localStorage
 export const getChatSessions = () => {
